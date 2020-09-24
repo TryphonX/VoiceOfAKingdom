@@ -2,10 +2,10 @@
 using System;
 using System.Threading.Tasks;
 using Discord;
-using VoiceOfAKingdomDiscord.Scripts;
 using System.Text;
+using VoiceOfAKingdomDiscord.Scripts.Modules;
 
-namespace VoiceOfAKingdomDiscord
+namespace VoiceOfAKingdomDiscord.Scripts
 {
     class App
     {

@@ -5,9 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using VoiceOfAKingdomDiscord.Scripts.Commands;
-using VoiceOfAKingdomDiscord.Scripts.Modules;
 
-namespace VoiceOfAKingdomDiscord.Scripts
+namespace VoiceOfAKingdomDiscord.Scripts.Modules
 {
     class CommandHandler
     {

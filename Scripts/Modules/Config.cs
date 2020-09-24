@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using System.Text;
 
-namespace VoiceOfAKingdomDiscord.Scripts
+namespace VoiceOfAKingdomDiscord.Scripts.Modules
 {
     class Config
     {

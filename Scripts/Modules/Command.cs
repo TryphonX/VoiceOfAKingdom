@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using VoiceOfAKingdomDiscord.Scripts.Modules;
 
-namespace VoiceOfAKingdomDiscord.Scripts
+namespace VoiceOfAKingdomDiscord.Scripts.Modules
 {
     abstract class Command
     {
