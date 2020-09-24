@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Modules
+namespace VoiceOfAKingdomDiscord.Modules
 {
     class Permission
     {

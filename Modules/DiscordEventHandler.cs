@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Modules
+namespace VoiceOfAKingdomDiscord.Modules
 {
     static class DiscordEventHandler
     {

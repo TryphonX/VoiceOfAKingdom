@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using VoiceOfAKingdomDiscord.Scripts.Commands;
+using VoiceOfAKingdomDiscord.Commands;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Modules
+namespace VoiceOfAKingdomDiscord.Modules
 {
     class CommandHandler
     {

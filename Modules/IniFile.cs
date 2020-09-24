@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Modules
+namespace VoiceOfAKingdomDiscord.Modules
 {
     public class IniFile
     {

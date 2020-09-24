@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Text;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Modules
+namespace VoiceOfAKingdomDiscord.Modules
 {
     class Config
     {

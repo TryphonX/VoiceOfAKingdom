@@ -3,9 +3,9 @@ using System;
 using System.Threading.Tasks;
 using Discord;
 using System.Text;
-using VoiceOfAKingdomDiscord.Scripts.Modules;
+using VoiceOfAKingdomDiscord.Modules;
 
-namespace VoiceOfAKingdomDiscord.Scripts
+namespace VoiceOfAKingdomDiscord
 {
     class App
     {

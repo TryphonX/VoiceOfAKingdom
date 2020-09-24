@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using VoiceOfAKingdomDiscord.Scripts.Modules;
+using VoiceOfAKingdomDiscord.Modules;
 
-namespace VoiceOfAKingdomDiscord.Scripts.Commands
+namespace VoiceOfAKingdomDiscord.Commands
 {
     class PingCommand: Command
     {
