@@ -11,7 +11,7 @@ namespace VoiceOfAKingdomDiscord.Scripts.Modules
     {
         public static void SetEventTasks(DiscordSocketClient client)
         {
-            client.Log += DiscordEventHandler.Client_Log;
+            client.Log += Client_Log;
             client.MessageReceived += Client_MessageReceived;
         }
 

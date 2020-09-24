@@ -12,7 +12,7 @@ namespace VoiceOfAKingdomDiscord.Scripts.Modules
         
         public virtual void Run(CommandHandler commandHandler)
         {
-            CommonScript.DebugLog($"init", $"{Name}Command.Run");
+            CommonScript.DebugLog($"init");
         }
     }
 }

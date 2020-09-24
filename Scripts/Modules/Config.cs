@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Text;
 
@@ -14,9 +15,11 @@ namespace VoiceOfAKingdomDiscord.Scripts.Modules
         public static bool IsDebug { get; private set; }
         public static string Prefix { get; private set; }
 
+        private const string CONFIG_PATH = "./config.ini";
+
         private static string ReadConfig(string section, string key)
         {
-            IniFile ini = new IniFile("./config.ini");
+            IniFile ini = new IniFile(CONFIG_PATH);
             return ini.IniReadValue(section, key);
         }
 
@@ -32,7 +35,7 @@ namespace VoiceOfAKingdomDiscord.Scripts.Modules
             }
             catch (Exception e)
             {
-                CommonScript.LogError(e.Message, "ReloadKeys");
+                CommonScript.LogError(e.Message);
             }
         }
 
