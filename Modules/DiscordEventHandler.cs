@@ -9,10 +9,10 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     static class DiscordEventHandler
     {
-        public static void SetEventTasks(DiscordSocketClient client)
+        public static void SetEventTasks()
         {
-            client.Log += Client_Log;
-            client.MessageReceived += Client_MessageReceived;
+            App.Client.Log += Client_Log;
+            App.Client.MessageReceived += Client_MessageReceived;
         }
 
         private static Task Client_MessageReceived(SocketMessage msg)

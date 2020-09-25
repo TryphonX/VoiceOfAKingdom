@@ -23,7 +23,7 @@ namespace VoiceOfAKingdomDiscord
         {
             Client = new DiscordSocketClient();
 
-            DiscordEventHandler.SetEventTasks(Client);
+            DiscordEventHandler.SetEventTasks();
 
             await Client.LoginAsync(TokenType.Bot, Config.Token);
             await Client.StartAsync();
