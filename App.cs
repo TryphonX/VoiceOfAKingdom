@@ -33,11 +33,13 @@ namespace VoiceOfAKingdomDiscord
 
         private static void SendStartingMessage()
         {
-            StringBuilder separatorLine = new StringBuilder();
+            StringBuilder thickSeparatorLine = new StringBuilder();
+            StringBuilder thinSeparatorLine = new StringBuilder();
 
             for (int i = 0; i < CommonScript.Title.Length; i++)
             {
-                separatorLine.Append("=");
+                thickSeparatorLine.Append("=");
+                thinSeparatorLine.Append("-");
             }
 
             #region Init Message Format
@@ -47,31 +49,49 @@ namespace VoiceOfAKingdomDiscord
              * ==================
              * By TryphonX
              * Version: {version}
+             * ------------------
+             * Collaborators:
+             * {names}
+             * ==================
+             * DEBUG MODE
+             * ==================
              */
             #endregion
 
             #region Printing Init Message
-            Console.WriteLine(separatorLine);
+            Console.WriteLine(thickSeparatorLine);
 
             Console.ForegroundColor = ConsoleColor.Black;
             Console.BackgroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine(CommonScript.Title);
 
             Console.ResetColor();
-            Console.WriteLine(separatorLine);
+            Console.WriteLine(thickSeparatorLine);
 
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine($"Version: {CommonScript.Version}\nBy {CommonScript.Author}");
 
             Console.ResetColor();
-            Console.WriteLine(separatorLine);
+            Console.WriteLine(thinSeparatorLine);
+
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            StringBuilder collabSb = new StringBuilder("Collaborators: ");
+            collabSb.AppendLine();
+            foreach (string name in CommonScript.Collaborators)
+            {
+                collabSb.AppendLine(name);
+            }
+            Console.WriteLine(collabSb.ToString().Trim());
+
+            Console.ResetColor();
+            Console.WriteLine(thickSeparatorLine);
 
             if (Config.IsDebug)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("DEBUG MODE");
                 Console.ResetColor();
-                Console.WriteLine(separatorLine);
+                Console.WriteLine(thickSeparatorLine);
             }
             #endregion
         }

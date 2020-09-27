@@ -9,9 +9,10 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     static class CommonScript
     {
-        public const string Version = "0.1.0";
-        public const string Author = "TryphonX";
-        public const string Title = "Voice of a Kingdom";
+        public static string Version { get; } = "0.1.0";
+        public static string Author { get; } = "Tryphon Ksydas";
+        public static string[] Collaborators { get; } = { "ZarOS69" };
+        public static string Title { get; } = "Voice of a Kingdom";
 
         public static void Log(string msg)
         {
