@@ -106,5 +106,15 @@ namespace VoiceOfAKingdomDiscord.Commands
                 helpMessage.AppendLine();
             }
         }
+
+        private Embed PrepareEmbed(Command command)
+        {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.Color = Color.DarkPurple;
+            eb.Title = command.Name;
+            eb.Description = command.Description;
+            return eb.Build();
+
+        }
     }
 }
