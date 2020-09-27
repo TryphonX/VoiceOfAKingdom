@@ -100,11 +100,18 @@ namespace VoiceOfAKingdomDiscord.Commands
 
         private Embed PrepareHelpAll(CommandHandler commandHandler)
         {
-            EmbedBuilder eb = new EmbedBuilder();
+            EmbedBuilder eb = new EmbedBuilder
+            {
+                Color = Color.Teal
+            };
 
             foreach (Command command in commandHandler.Commands)
             {
-                
+                eb.AddField(new EmbedFieldBuilder
+                {
+                    Name = command.Name,
+                    Value = command.Description
+                });                   
             }
 
             return eb.Build();
