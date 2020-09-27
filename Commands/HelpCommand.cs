@@ -30,7 +30,7 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(commandHandler);
 
-            StringBuilder helpMessage = new StringBuilder();
+            Embed embed;
             
             // check if there is an arg
             if (commandHandler.Args.Count > 0)
@@ -52,69 +52,73 @@ namespace VoiceOfAKingdomDiscord.Commands
                 // If there was no command mentioned, show the help for all commands
                 if (command == null)
                 {
-                    SendHelpAll(commandHandler, helpMessage);
+                    embed = PrepareHelpAll(commandHandler);
                 }
                 // If there is a command, show the help for the command used
                 else
                 {
-                    PrepareHelpMessage(command, helpMessage);
+                    //PrepareHelpMessage(command, helpMessage);
+                    embed = PrepareEmbed(command);
                 }
             }
             else
             {
-                SendHelpAll(commandHandler, helpMessage);
+                embed = PrepareHelpAll(commandHandler);
             }
 
-            commandHandler.Msg.Channel.SendMessageAsync(helpMessage.ToString());
+            commandHandler.Msg.Channel.SendMessageAsync(embed: embed);
         }
 
-        private void PrepareHelpMessage(Command command, StringBuilder helpMessage)
+        //private void PrepareHelpMessage(Command command, StringBuilder helpMessage)
+        //{
+        //    // Example: !help
+        //    helpMessage.Append($"**{Config.Prefix}{command.Name}**");
+
+        //    // Example: !help <param> <param>
+        //    if (command.Parameters.Count > 0)
+        //    {
+        //        foreach (string param in command.Parameters.Keys)
+        //        {
+        //            helpMessage.Append($" `<{param}>`");
+        //        }
+        //    }
+
+        //    // Add the description if any
+        //    if (!string.IsNullOrEmpty(command.Description))
+        //    {
+        //        helpMessage.Append($"\n`{command.Description}`");
+        //    }
+        //    // Show patameter descriptions if any
+        //    if (command.Parameters.Count > 0)
+        //    {
+        //        foreach (string param in command.Parameters.Keys)
+        //        {
+        //            helpMessage.Append($"\n{param}: {command.Parameters[param]}");
+        //        }
+        //    }
+        //}
+
+        private Embed PrepareHelpAll(CommandHandler commandHandler)
         {
-            // Example: !help
-            helpMessage.Append($"**{Config.Prefix}{command.Name}**");
+            EmbedBuilder eb = new EmbedBuilder();
 
-            // Example: !help <param> <param>
-            if (command.Parameters.Count > 0)
-            {
-                foreach (string param in command.Parameters.Keys)
-                {
-                    helpMessage.Append($" `<{param}>`");
-                }
-            }
-
-            // Add the description if any
-            if (!string.IsNullOrEmpty(command.Description))
-            {
-                helpMessage.Append($"\n`{command.Description}`");
-            }
-            // Show patameter descriptions if any
-            if (command.Parameters.Count > 0)
-            {
-                foreach (string param in command.Parameters.Keys)
-                {
-                    helpMessage.Append($"\n{param}: {command.Parameters[param]}");
-                }
-            }
-        }
-
-        private void SendHelpAll(CommandHandler commandHandler, StringBuilder helpMessage)
-        {
             foreach (Command command in commandHandler.Commands)
             {
-                PrepareHelpMessage(command, helpMessage);
-
-                helpMessage.AppendLine();
+                
             }
+
+            return eb.Build();
         }
 
         private Embed PrepareEmbed(Command command)
         {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.Color = Color.DarkPurple;
-            eb.Title = command.Name;
-            eb.Description = command.Description;
+            EmbedBuilder eb = new EmbedBuilder
+            {
+                Color = Color.DarkPurple,
+                Title = command.Name,
+                Description = command.Description
+            };
             return eb.Build();
-
         }
     }
 }
