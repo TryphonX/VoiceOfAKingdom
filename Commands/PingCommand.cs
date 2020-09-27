@@ -15,7 +15,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 Name
             };
             RequiredPermission = Permission.AnyonePermission;
-            Description = "";
+            Description = "Check if the bot is responding.";
             Parameters = new Dictionary<string, string>();
         }
 

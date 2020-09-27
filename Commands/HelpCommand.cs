@@ -19,10 +19,10 @@ namespace VoiceOfAKingdomDiscord.Commands
                 Name
             };
             RequiredPermission = Permission.AnyonePermission;
-            Description = "";
+            Description = "Displays help message for all commands or a specific commands";
             Parameters = new Dictionary<string, string>
             {
-                { "command", "The command you need help with." }
+                { "command", "The command to display help for." }
             };
         }
 
@@ -31,24 +31,30 @@ namespace VoiceOfAKingdomDiscord.Commands
             base.Run(commandHandler);
 
             StringBuilder helpMessage = new StringBuilder();
+            
+            // check if there is an arg
             if (commandHandler.Args.Count > 0)
             {
                 SpecificCommand = commandHandler.Args[0];
-
+                
+                // Iterate through the commands to find if the
+                // first arg is an actual command name
                 Command command = null;
-
                 foreach (Command cmd in commandHandler.Commands)
                 {
+                    // If any of the abbreviations is mentioned save the command
                     if (cmd.Abbreviations.Any(abbrev => abbrev.Equals(SpecificCommand, StringComparison.OrdinalIgnoreCase)))
                     {
                         command = cmd;
                     }
                 }
 
+                // If there was no command mentioned, show the help for all commands
                 if (command == null)
                 {
                     SendHelpAll(commandHandler, helpMessage);
                 }
+                // If there is a command, show the help for the command used
                 else
                 {
                     PrepareHelpMessage(command, helpMessage);
@@ -64,8 +70,10 @@ namespace VoiceOfAKingdomDiscord.Commands
 
         private void PrepareHelpMessage(Command command, StringBuilder helpMessage)
         {
+            // Example: !help
             helpMessage.Append($"**{Config.Prefix}{command.Name}**");
 
+            // Example: !help <param> <param>
             if (command.Parameters.Count > 0)
             {
                 foreach (string param in command.Parameters.Keys)
@@ -74,10 +82,12 @@ namespace VoiceOfAKingdomDiscord.Commands
                 }
             }
 
+            // Add the description if any
             if (!string.IsNullOrEmpty(command.Description))
             {
                 helpMessage.Append($"\n`{command.Description}`");
             }
+            // Show patameter descriptions if any
             if (command.Parameters.Count > 0)
             {
                 foreach (string param in command.Parameters.Keys)
