@@ -13,7 +13,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         private string commandName;
         public List<string> Args { get; private set; }
         public SocketMessage Msg { get; private set; }
-        private List<Command> Commands { get; set; }
+        public List<Command> Commands { get; set; }
 
         public void Run(SocketMessage msg)
         {
@@ -57,7 +57,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             Commands = new List<Command>
             {
-                new PingCommand()
+                new PingCommand(),
+                new HelpCommand()
             };
         }
 

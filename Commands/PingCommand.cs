@@ -15,6 +15,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 Name
             };
             RequiredPermission = Permission.AnyonePermission;
+            Description = "";
         }
 
         public override void Run(CommandHandler commandHandler)
