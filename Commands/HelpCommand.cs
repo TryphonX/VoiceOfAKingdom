@@ -72,9 +72,8 @@ namespace VoiceOfAKingdomDiscord.Commands
         /// <returns>The embed it created; ready to send</returns>
         private Embed PrepareHelpEmbedAll(CommandHandler commandHandler)
         {
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Gold)
-                .WithFooter(CommonScript.EmbedFooter);
+            EmbedBuilder embed = new CustomEmbed()
+                .WithColor(Color.Gold);
 
             StringBuilder valueBuilder;
             foreach (Command command in commandHandler.Commands)
@@ -120,10 +119,9 @@ namespace VoiceOfAKingdomDiscord.Commands
         /// <returns></returns>
         private Embed PrepareHelpEmbedSpecific(Command command)
         {
-            EmbedBuilder embed = new EmbedBuilder()
+            EmbedBuilder embed = new CustomEmbed()
                 .WithColor(Color.DarkPurple)
-                .WithTitle(GetCommandWithSyntax(command))
-                .WithFooter(CommonScript.EmbedFooter);
+                .WithTitle(GetCommandWithSyntax(command));
 
 
             StringBuilder descriptionBuilder = new StringBuilder(command.Description);
