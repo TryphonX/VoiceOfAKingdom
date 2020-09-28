@@ -1,4 +1,4 @@
-﻿using Discord.WebSocket;
+using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
 using Discord;
@@ -13,6 +13,7 @@ namespace VoiceOfAKingdomDiscord
 
         static void Main(string[] args)
         {
+            Console.Title = $"{CommonScript.Title} v{CommonScript.Version}";
             Config.ReloadConfig();
             SendStartingMessage();
             if (!string.IsNullOrEmpty(Config.Token))
