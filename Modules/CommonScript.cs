@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Discord;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -13,6 +14,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static string Author { get; } = "Tryphon Ksydas";
         public static string[] Collaborators { get; } = { "ZarOS69" };
         public static string Title { get; } = "Voice of a Kingdom";
+        public static EmbedFooterBuilder EmbedFooter { get; } = new EmbedFooterBuilder()
+            .WithText($"👑 Voice of a Kingdom v{Version}");
 
         public static void Log(string msg)
         {

@@ -10,11 +10,7 @@ namespace VoiceOfAKingdomDiscord.Commands
         public PingCommand()
         {
             Name = "ping";
-            Abbreviations = new List<string>()
-            {
-                Name
-            };
-            RequiredPermission = Permission.AnyonePermission;
+            Abbreviations.Add(Name);
             Description = "Check if the bot is responding.";
             Parameters = new Dictionary<string, string>();
         }
@@ -23,7 +19,7 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(commandHandler);
 
-            commandHandler.Msg.Channel.SendMessageAsync("pong");
+            commandHandler.Msg.Channel.SendMessageAsync("pong!");
         }
     }
 }
