@@ -10,12 +10,14 @@ namespace VoiceOfAKingdomDiscord
     class App
     {
         public static DiscordSocketClient Client { get; private set; }
+        public static GameManager GameMgr { get; private set; } = new GameManager();
 
         static void Main(string[] args)
         {
             Console.Title = $"{CommonScript.Title} v{CommonScript.Version}";
             Config.ReloadConfig();
             SendStartingMessage();
+
             if (!string.IsNullOrEmpty(Config.Token))
                 new App().MainAsync().GetAwaiter().GetResult();
         }
