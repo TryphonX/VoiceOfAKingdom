@@ -31,12 +31,20 @@ namespace VoiceOfAKingdomDiscord.Modules
             Console.ResetColor();
         }
 
-        public static void DebugLog(object msg)
+        public static void DebugLog(object msg, bool skipOneFrame = false)
         {
             if (!Config.IsDebug)
                 return;
 
-            StackFrame stackFrame = new StackTrace(1, true).GetFrame(0);
+            StackFrame stackFrame;
+            if (skipOneFrame)
+            {
+                stackFrame = new StackTrace(2, true).GetFrame(0);
+            }
+            else
+            {
+                stackFrame = new StackTrace(1, true).GetFrame(0);
+            }
 
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine($"{DateTime.Now.ToLongTimeString()} Debug: {msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
