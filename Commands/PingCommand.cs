@@ -15,11 +15,11 @@ namespace VoiceOfAKingdomDiscord.Commands
             Parameters = new Dictionary<string, string>();
         }
 
-        public override void Run(CommandHandler commandHandler)
+        public override void Run(CommandHandler cmdHandler)
         {
-            base.Run(commandHandler);
+            base.Run(cmdHandler);
 
-            commandHandler.Msg.Channel.SendMessageAsync("pong!");
+            cmdHandler.Msg.Channel.SendMessageAsync("pong!");
         }
     }
 }

@@ -12,7 +12,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public string Description { get; protected set; }
         public Dictionary<string, string> Parameters { get; protected set; }
         
-        public virtual void Run(CommandHandler commandHandler)
+        public virtual void Run(CommandHandler cmdHandler)
         {
             CommonScript.DebugLog($"init");
         }

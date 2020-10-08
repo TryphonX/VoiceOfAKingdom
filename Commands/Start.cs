@@ -17,19 +17,19 @@ namespace VoiceOfAKingdomDiscord.Commands
             Parameters = new Dictionary<string, string>();
         }
 
-        public override void Run(CommandHandler commandHandler)
+        public override void Run(CommandHandler cmdHandler)
         {
-            base.Run(commandHandler);
+            base.Run(cmdHandler);
 
-            if (GameManager.HasGame(App.GameMgr.Games, commandHandler.Msg.Author.Id))
+            if (GameManager.HasGame(App.GameMgr.Games, cmdHandler.Msg.Author.Id))
             {
-                commandHandler.Msg.Channel.SendMessageAsync("You already have an active game.");
+                cmdHandler.Msg.Channel.SendMessageAsync("You already have an active game.");
             }
             else
             {
-                App.GameMgr.Games.Add(new Game(commandHandler.Msg.Author.Id, commandHandler));
+                App.GameMgr.Games.Add(new Game(cmdHandler.Msg.Author.Id, cmdHandler));
 
-                commandHandler.Msg.Channel.SendMessageAsync("New game started. Look for your channel.");
+                cmdHandler.Msg.Channel.SendMessageAsync("New game started. Look for your channel.");
             }
         }
     }
