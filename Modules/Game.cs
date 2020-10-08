@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace VoiceOfAKingdomDiscord.Modules
@@ -10,6 +11,21 @@ namespace VoiceOfAKingdomDiscord.Modules
         public ulong ChannelID { get; set; }
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
+
+        public Game(ulong userID, CommandHandler commandHandler)
+        {
+            PlayerID = userID;
+
+            ulong guildID = 0;
+            foreach (var guild in App.Client.Guilds)
+            {
+                if (guild.Channels.Any(channel => channel.Id == commandHandler.Msg.Channel.Id))
+                {
+                    guildID = guild.Id;
+                }
+            }
+            ChannelID = App.Client.GetGuild(guildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game").Result.Id;
+        }
 
         public class KingdomStatsClass
         {
