@@ -7,13 +7,13 @@ using System.Linq;
 
 namespace VoiceOfAKingdomDiscord.Commands
 {
-    class Start: Command
+    class StartCommand: Command
     {
-        public Start()
+        public StartCommand()
         {
             Name = "start";
             Abbreviations.Add(Name);
-            Description = "Start a new game.";
+            Description = "Starts a new game.";
             Parameters = new Dictionary<string, string>();
         }
 

@@ -58,7 +58,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             Commands = new List<Command>
             {
                 new PingCommand(),
-                new HelpCommand()
+                new HelpCommand(),
+                new StartCommand()
             };
         }
 
