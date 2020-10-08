@@ -18,8 +18,18 @@ namespace VoiceOfAKingdomDiscord
             Config.ReloadConfig();
             SendStartingMessage();
 
+            Console.CancelKeyPress += Console_CancelKeyPress;
+
             if (!string.IsNullOrEmpty(Config.Token))
                 new App().MainAsync().GetAwaiter().GetResult();
+        }
+
+        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        {
+            foreach (var game in GameMgr.Games)
+            {
+                GameManager.EndGame(game);
+            }
         }
 
         public async Task MainAsync()
