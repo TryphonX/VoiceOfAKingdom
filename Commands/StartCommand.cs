@@ -21,15 +21,13 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(cmdHandler);
 
-            if (GameManager.HasGame(App.GameMgr.Games, cmdHandler.Msg.Author.Id))
+            if (GameManager.TryGetGame(cmdHandler.Msg.Author.Id, out Game game))
             {
-                cmdHandler.Msg.Channel.SendMessageAsync("You already have an active game.");
+                cmdHandler.Msg.Channel.SendMessageAsync($"You already have an active game \\➡️ <#{game.ChannelID}>.");
             }
             else
             {
                 App.GameMgr.Games.Add(new Game(cmdHandler.Msg.Author.Id, cmdHandler));
-
-                cmdHandler.Msg.Channel.SendMessageAsync("New game started. Look for your channel.");
             }
         }
     }

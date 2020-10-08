@@ -14,6 +14,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static string OwnerID { get; private set; }
         public static bool IsDebug { get; private set; }
         public static string Prefix { get; private set; }
+        public static ulong GamesCategoryID { get; private set; }
 
         private const string CONFIG_PATH = "./config.ini";
 
@@ -31,7 +32,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Token = ReadConfig(ConfigSection.App, ConfigKey.Token).Trim();
                 OwnerID = ReadConfig(ConfigSection.App, ConfigKey.OwnerID).Trim();
                 IsDebug = ReadConfig(ConfigSection.App, ConfigKey.IsDebug).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
-                Prefix = ReadConfig(ConfigSection.App, ConfigKey.Prefix);
+                Prefix = ReadConfig(ConfigSection.Preferences, ConfigKey.Prefix);
+                GamesCategoryID = ulong.Parse(ReadConfig(ConfigSection.Preferences, ConfigKey.GamesCategoryID));
             }
             catch (Exception e)
             {
@@ -70,6 +72,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             public static string OwnerID { get { return new ConfigKey("OwnerID").Value; } }
             public static string IsDebug { get { return new ConfigKey("IsDebug").Value; } }
             public static string Prefix { get { return new ConfigKey("Prefix").Value; } }
+            public static string GamesCategoryID { get { return new ConfigKey("GamesCategoryID").Value; } }
         }
 
         #endregion

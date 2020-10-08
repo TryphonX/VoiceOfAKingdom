@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Discord.WebSocket;
+using Discord;
+using System.Threading.Tasks;
+using Discord.Rest;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
@@ -25,14 +29,22 @@ namespace VoiceOfAKingdomDiscord.Modules
                     GuildID = guild.Id;
                 }
             }
-            ChannelID = App.Client.GetGuild(GuildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game").Result.Id;
-        }
 
-        public static void EndGame(Game game, GameManager gameMgr)
-        {
-            App.Client.GetGuild(game.GuildID).GetTextChannel(game.ChannelID).DeleteAsync();
+            App.Client.GetGuild(GuildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game", channel =>
+            {
+                channel.CategoryId = Config.GamesCategoryID;
+            }).ContinueWith(antecedent =>
+            {
+                ChannelID = antecedent.Result.Id;
 
-            gameMgr.Games.Remove(game);
+                // Give the player the permission to send messages
+                antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
+                    new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
+
+                antecedent.Result.SendMessageAsync($"Placeholder message, my King");
+
+                commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
+            });
         }
 
         public class KingdomStatsClass

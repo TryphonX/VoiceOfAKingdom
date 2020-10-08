@@ -19,11 +19,11 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(cmdHandler);
 
-            if (GameManager.TryGetGame(cmdHandler.Msg.Author.Id, App.GameMgr, out Game game))
+            if (GameManager.TryGetGame(cmdHandler.Msg.Author.Id, out Game game))
             {
                 cmdHandler.Msg.Channel.SendMessageAsync("You ended your game.");
 
-                Game.EndGame(game, App.GameMgr);
+                GameManager.EndGame(game);
             }
             else
             {
