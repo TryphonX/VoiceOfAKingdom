@@ -9,6 +9,7 @@ namespace VoiceOfAKingdomDiscord.Modules
     {
         public ulong PlayerID { get; set; }
         public ulong ChannelID { get; set; }
+        public ulong GuildID { get; set; }
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
 
@@ -16,15 +17,22 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             PlayerID = userID;
 
-            ulong guildID = 0;
+            GuildID = 0;
             foreach (var guild in App.Client.Guilds)
             {
                 if (guild.Channels.Any(channel => channel.Id == commandHandler.Msg.Channel.Id))
                 {
-                    guildID = guild.Id;
+                    GuildID = guild.Id;
                 }
             }
-            ChannelID = App.Client.GetGuild(guildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game").Result.Id;
+            ChannelID = App.Client.GetGuild(GuildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game").Result.Id;
+        }
+
+        public static void EndGame(Game game, GameManager gameMgr)
+        {
+            App.Client.GetGuild(game.GuildID).GetTextChannel(game.ChannelID).DeleteAsync();
+
+            gameMgr.Games.Remove(game);
         }
 
         public class KingdomStatsClass
