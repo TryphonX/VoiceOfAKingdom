@@ -15,11 +15,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static PermissionPower GetUserPermissionPower(SocketUser user)
         {
             // Owner
-            if (ulong.TryParse(Config.OwnerID, out ulong ownerID))
-            {
-                if (ownerID == user.Id)
-                    return OwnerPermission.Power;
-            }
+            if (Config.OwnerID == user.Id)
+                return OwnerPermission.Power;
 
             return AnyonePermission.Power;
 

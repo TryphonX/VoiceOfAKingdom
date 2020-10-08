@@ -11,7 +11,7 @@ namespace VoiceOfAKingdomDiscord.Modules
     class Config
     {
         public static string Token { get; private set; }
-        public static string OwnerID { get; private set; }
+        public static ulong OwnerID { get; private set; }
         public static bool IsDebug { get; private set; }
         public static string Prefix { get; private set; }
         public static ulong GamesCategoryID { get; private set; }
@@ -29,8 +29,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             try
             {
-                Token = ReadConfig(ConfigSection.App, ConfigKey.Token).Trim();
-                OwnerID = ReadConfig(ConfigSection.App, ConfigKey.OwnerID).Trim();
+                Token = ReadConfig(ConfigSection.App, ConfigKey.Token);
+                OwnerID = ulong.Parse(ReadConfig(ConfigSection.App, ConfigKey.OwnerID));
                 IsDebug = ReadConfig(ConfigSection.App, ConfigKey.IsDebug).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
                 Prefix = ReadConfig(ConfigSection.Preferences, ConfigKey.Prefix);
                 GamesCategoryID = ulong.Parse(ReadConfig(ConfigSection.Preferences, ConfigKey.GamesCategoryID));
