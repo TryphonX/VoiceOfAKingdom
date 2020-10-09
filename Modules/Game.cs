@@ -14,6 +14,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public ulong PlayerID { get; set; }
         public ulong ChannelID { get; set; }
         public ulong GuildID { get; set; }
+        public DateTime Date { get; set; } = CommonScript.GetRandomDate();
+        public int MonthsInControl { get; set; } = 0;
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
 
@@ -41,7 +43,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
-                antecedent.Result.SendMessageAsync($"Placeholder message, my King");
+                ISocketMessageChannel channel = (ISocketMessageChannel)GameManager.GetGameChannel(this);
+                channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this));
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
             });
@@ -49,17 +52,19 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public class KingdomStatsClass
         {
-            public int Reputation { get; set; }
-            public int Wealth { get; set; }
-            public int Population { get; set; }
+            public int Folks { get; set; }
             public int Military { get; set; }
+            public int Nobles { get; set; }
+            public int Wealth { get; set; }
 
             public KingdomStatsClass()
             {
-                Reputation = 50;
-                Wealth = 50;
-                Population = 50;
-                Military = 50;
+                Random random = new Random();
+
+                Folks = random.Next(40, 60);
+                Wealth = random.Next(40, 60);
+                Nobles = random.Next(40, 60);
+                Military = random.Next(40, 60);
             }
         }
         public class PersonalStatsClass
@@ -71,10 +76,12 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             public PersonalStatsClass()
             {
-                Happiness = new Random().Next(30, 60);
-                Sanity = new Random().Next(30, 60);
-                Strength = new Random().Next(30, 60);
-                Charisma = new Random().Next(30, 60);
+                Random random = new Random();
+
+                Happiness = random.Next(30, 60);
+                Sanity = random.Next(30, 60);
+                Strength = random.Next(30, 60);
+                Charisma = random.Next(30, 60);
             }
         }
     }

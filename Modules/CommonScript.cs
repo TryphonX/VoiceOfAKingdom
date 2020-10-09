@@ -53,5 +53,18 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static string GetClassName(string fileName) =>
             fileName.Split('\\').Last().TrimEnd('s', 'c', '.');
+
+        public static DateTime GetRandomDate()
+        {
+            DateTime start = new DateTime(1600, 1, 1);
+            int range = (DateTime.Today - start).Days;
+            return start.AddDays(new Random().Next(range));
+        }
+
+        public static int RoundToX(int num, int roundTo = 10)
+        {
+            int rem = num % roundTo;
+            return rem >= roundTo/2 ? (num - rem + roundTo) : (num - rem);
+        }
     }
 }
