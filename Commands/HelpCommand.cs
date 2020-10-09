@@ -72,7 +72,7 @@ namespace VoiceOfAKingdomDiscord.Commands
         /// <returns>The embed it created; ready to send</returns>
         private Embed PrepareHelpEmbedAll(CommandHandler commandHandler)
         {
-            EmbedBuilder embed = new CustomEmbed()
+            EmbedBuilder embed = new CustomEmbed();
 
             StringBuilder valueBuilder;
             foreach (Command command in commandHandler.Commands)
