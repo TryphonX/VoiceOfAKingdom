@@ -58,7 +58,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             DateTime start = new DateTime(1600, 1, 1);
             int range = (DateTime.Today - start).Days;
-            return start.AddDays(new Random().Next(range));
+            return start.AddDays(new Random().Next(range)).ToLocalTime();
         }
 
         public static int RoundToX(int num, int roundTo = 10)

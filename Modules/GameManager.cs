@@ -78,12 +78,19 @@ namespace VoiceOfAKingdomDiscord.Modules
             return null;
         }
 
+        /// <summary>
+        /// Creates the new month embed. Format: https://i.imgur.com/ZEUIPeR.png
+        /// </summary>
+        /// <param name="game"></param>
+        /// <param name="request"></param>
+        /// <returns>The new month embed.</returns>
         public Embed GetNewMonthEmbed(Game game, Request request)
         {
+            // Base
             EmbedBuilder embed = new CustomEmbed()
                 .WithAuthor(new EmbedAuthorBuilder()
                     .WithName($"Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}"))
-                .WithTitle($"{request.Person.Icon} {request.Person.Name}")
+                .WithTitle($"\\{request.Person.Icon} {request.Person.Name}")
                 .WithThumbnailUrl(request.Person.ImageLink)
                 .WithColor(request.Person.Color)
                 .WithDescription(request.Question)
@@ -91,24 +98,30 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .AddField(CommonScript.EmptyEmbedField());
 
             StringBuilder sb = new StringBuilder();
-
+            #region On Accept
+            // init sb
+            // then add all the stat changes about the request
+            // in the case you accept
             sb.Append(GetStatChangesString(request.KingdomStatsOnAccept));
-
             sb.Append(GetStatChangesString(request.PersonalStatsOnAccept));
 
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName("Stats Effects on Accept")
+                .WithName("Changes on Accept")
                 .WithValue(sb.ToString()));
+            #endregion
 
             sb.Clear();
+            #region On Reject
+            // Same things as on accept
             sb.Append(GetStatChangesString(request.KingdomStatsOnReject));
             sb.Append(GetStatChangesString(request.PersonalStatsOnReject));
 
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName("Stats Effects on Reject")
+                .WithName("Changes on Reject")
                 .WithValue(sb.ToString()));
+            #endregion
 
             embed.AddField(CommonScript.EmptyEmbedField());
 
@@ -165,6 +178,11 @@ namespace VoiceOfAKingdomDiscord.Modules
             return embed.Build();
         }
 
+        /// <summary>
+        /// Creates the string for the stat effects.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public string GetStatChangesString(object obj)
         {
             StringBuilder sb = new StringBuilder();
@@ -186,6 +204,11 @@ namespace VoiceOfAKingdomDiscord.Modules
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Prepares the Value of the stat field (bar).
+        /// </summary>
+        /// <param name="stat"></param>
+        /// <returns>The string with the linear progress bar of the stat.</returns>
         private string PrepareStatFieldValue(int stat)
         {
             StringBuilder sb = new StringBuilder("[");
