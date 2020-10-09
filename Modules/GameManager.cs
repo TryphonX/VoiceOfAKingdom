@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -9,10 +10,22 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     class GameManager
     {
-        public List<Game> Games { get; private set; } = new List<Game>();
+        public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
         public static bool HasGame(List<Game> games, ulong userID) =>
             games.Any(game => game.PlayerID == userID);
+        public List<Request> Requests { get; } = new List<Request>();
+        private const string UP_ARROW_SMALL = "\\🔼";
+        private const string DOWN_ARROW_SMALL = "\\🔻";
+
+        public GameManager()
+        {
+            Requests.Add(new Request("Some question?", Person.General,
+                new Game.KingdomStatsClass(-4, 0, 8, -2),
+                new Game.PersonalStatsClass(-4, 1),
+                new Game.KingdomStatsClass(4, 0, -8, 2),
+                new Game.PersonalStatsClass(4, -1)));
+        }
 
         public static bool TryGetGame(ulong userID, out Game game)
         {
@@ -112,28 +125,84 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Happiness)));
             #endregion
 
-            #region Sanity
-            embed.AddField(new EmbedFieldBuilder()
-                .WithIsInline(true)
-                .WithName($"🧠 Sanity: {game.PersonalStats.Sanity}")
-                .WithValue(PrepareStatFieldValue(game.PersonalStats.Sanity)));
-            #endregion
-
-            embed.AddField(CommonScript.EmptyEmbedField());
-
-            #region Strength
-            embed.AddField(new EmbedFieldBuilder()
-                .WithIsInline(true)
-                .WithName($"💪 Strength: {game.PersonalStats.Strength}")
-                .WithValue(PrepareStatFieldValue(game.PersonalStats.Strength)));
-            #endregion
-
             #region Charisma
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}")
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Charisma)));
             #endregion
+
+            return embed.Build();
+        }
+
+        public Embed GetNewRequestEmbed(Request request)
+        {
+            EmbedBuilder embed = new CustomEmbed()
+                .WithTitle(request.Person.Name)
+                .WithThumbnailUrl(request.Person.ImageLink)
+                .WithColor(request.Person.Color)
+                .WithDescription(request.Question)
+                .AddField(CommonScript.EmptyEmbedField());
+
+            StringBuilder sb = new StringBuilder();
+            foreach (var property in request.KingdomStatsOnAccept.GetType().GetProperties())
+            {
+                if ((short)property.GetValue(request.KingdomStatsOnAccept) > 0)
+                {
+                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
+                }
+                else if ((short)property.GetValue(request.KingdomStatsOnAccept) < 0)
+                {
+                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
+                }
+            }
+
+            foreach (var property in request.PersonalStatsOnAccept.GetType().GetProperties())
+            {
+                if ((short)property.GetValue(request.PersonalStatsOnAccept) > 0)
+                {
+                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
+                }
+                else if ((short)property.GetValue(request.PersonalStatsOnAccept) < 0)
+                {
+                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
+                }
+            }
+
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName("Stats Effects on Accept")
+                .WithValue(sb.ToString()));
+
+            sb.Clear();
+            foreach (var property in request.KingdomStatsOnReject.GetType().GetProperties())
+            {
+                if ((short)property.GetValue(request.KingdomStatsOnReject) > 0)
+                {
+                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
+                }
+                else if ((short)property.GetValue(request.KingdomStatsOnReject) < 0)
+                {
+                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
+                }
+            }
+
+            foreach (var property in request.PersonalStatsOnReject.GetType().GetProperties())
+            {
+                if ((short)property.GetValue(request.PersonalStatsOnReject) > 0)
+                {
+                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
+                }
+                else if ((short)property.GetValue(request.PersonalStatsOnReject) < 0)
+                {
+                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
+                }
+            }
+
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName("Stats Effects on Reject")
+                .WithValue(sb.ToString()));
 
             return embed.Build();
         }

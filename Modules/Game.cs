@@ -47,41 +47,52 @@ namespace VoiceOfAKingdomDiscord.Modules
                 channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this)).Wait();
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
+                channel.SendMessageAsync(embed: App.GameMgr.GetNewRequestEmbed(App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)]));
             });
         }
 
         public class KingdomStatsClass
         {
-            public int Folks { get; set; }
-            public int Military { get; set; }
-            public int Nobles { get; set; }
-            public int Wealth { get; set; }
+            public short Folks { get; set; }
+            public short Military { get; set; }
+            public short Nobles { get; set; }
+            public short Wealth { get; set; }
 
             public KingdomStatsClass()
             {
                 Random random = new Random();
 
-                Folks = random.Next(40, 60);
-                Wealth = random.Next(40, 60);
-                Nobles = random.Next(40, 60);
-                Military = random.Next(40, 60);
+                Folks = (short)random.Next(40, 60);
+                Wealth = (short)random.Next(40, 60);
+                Nobles = (short)random.Next(40, 60);
+                Military = (short)random.Next(40, 60);
+            }
+
+            public KingdomStatsClass(short folks, short nobles, short military, short wealth)
+            {
+                Folks = folks;
+                Nobles = nobles;
+                Military = military;
+                Wealth = wealth;
             }
         }
         public class PersonalStatsClass
         {
-            public int Happiness { get; set; }
-            public int Sanity { get; set; }
-            public int Strength { get; set; }
-            public int Charisma { get; set; }
+            public short Happiness { get; set; }
+            public short Charisma { get; set; }
 
             public PersonalStatsClass()
             {
                 Random random = new Random();
 
-                Happiness = random.Next(30, 60);
-                Sanity = random.Next(30, 60);
-                Strength = random.Next(30, 60);
-                Charisma = random.Next(30, 60);
+                Happiness = (short)random.Next(30, 60);
+                Charisma = (short)random.Next(30, 60);
+            }
+
+            public PersonalStatsClass(short happiness, short charisma)
+            {
+                Happiness = happiness;
+                Charisma = charisma;
             }
         }
     }
