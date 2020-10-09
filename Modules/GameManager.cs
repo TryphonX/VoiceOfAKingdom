@@ -10,22 +10,25 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     class GameManager
     {
+        private const string UP_ARROW_SMALL = "\\🔼";
+        private const string DOWN_ARROW_SMALL = "\\🔻";
+        private const string STEADY_ICON = "\\➖";
+        private const short SMALL_CHANGE = 4;
+        private const short MEDIUM_CHANGE = 9;
+        private const short BIG_CHANGE = 12;
+
         public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
         public static bool HasGame(List<Game> games, ulong userID) =>
             games.Any(game => game.PlayerID == userID);
-        public List<Request> Requests { get; } = new List<Request>();
-        private const string UP_ARROW_SMALL = "\\🔼";
-        private const string DOWN_ARROW_SMALL = "\\🔻";
-
-        public GameManager()
+        public List<Request> Requests { get; } = new List<Request>()
         {
-            Requests.Add(new Request("Some question?", Person.General,
-                new Game.KingdomStatsClass(-4, 0, 8, -2),
-                new Game.PersonalStatsClass(-4, 1),
-                new Game.KingdomStatsClass(4, 0, -8, 2),
-                new Game.PersonalStatsClass(4, -1)));
-        }
+            new Request("Some question?", Person.General,
+                new Game.KingdomStatsClass(folks: -MEDIUM_CHANGE, military: BIG_CHANGE, wealth: -SMALL_CHANGE),
+                new Game.PersonalStatsClass(happiness: -MEDIUM_CHANGE, charisma: SMALL_CHANGE),
+                new Game.KingdomStatsClass(folks: MEDIUM_CHANGE, military: -BIG_CHANGE, wealth: SMALL_CHANGE),
+                new Game.PersonalStatsClass(happiness: MEDIUM_CHANGE, charisma: -SMALL_CHANGE))
+        };
 
         public static bool TryGetGame(ulong userID, out Game game)
         {
@@ -75,24 +78,51 @@ namespace VoiceOfAKingdomDiscord.Modules
             return null;
         }
 
-        public Embed GetNewMonthEmbed(Game game)
+        public Embed GetNewMonthEmbed(Game game, Request request)
         {
             EmbedBuilder embed = new CustomEmbed()
-                .WithTitle($"☀️ Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}")
-                .WithDescription("==============================")
+                .WithAuthor(new EmbedAuthorBuilder()
+                    .WithName($"Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}"))
+                .WithTitle($"{request.Person.Icon} {request.Person.Name}")
+                .WithThumbnailUrl(request.Person.ImageLink)
+                .WithColor(request.Person.Color)
+                .WithDescription(request.Question)
+                .WithTimestamp(game.Date)
                 .AddField(CommonScript.EmptyEmbedField());
+
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(GetStatChangesString(request.KingdomStatsOnAccept));
+
+            sb.Append(GetStatChangesString(request.PersonalStatsOnAccept));
+
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName("Stats Effects on Accept")
+                .WithValue(sb.ToString()));
+
+            sb.Clear();
+            sb.Append(GetStatChangesString(request.KingdomStatsOnReject));
+            sb.Append(GetStatChangesString(request.PersonalStatsOnReject));
+
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName("Stats Effects on Reject")
+                .WithValue(sb.ToString()));
+
+            embed.AddField(CommonScript.EmptyEmbedField());
 
             #region Folks
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($":banjo: Folks: {game.KingdomStats.Folks}")
+                .WithName($"{Person.Folk.Icon} Folks: {game.KingdomStats.Folks}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Folks)));
             #endregion
 
             #region Nobles
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"👑 Nobles: {game.KingdomStats.Nobles}")
+                .WithName($"{Person.Noble.Icon} Nobles: {game.KingdomStats.Nobles}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Nobles)));
             #endregion
 
@@ -101,7 +131,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             #region Military
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"🛡 Military: {game.KingdomStats.Military}")
+                .WithName($"{Person.Noble.Icon} Military: {game.KingdomStats.Military}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Military)));
             #endregion
 
@@ -135,76 +165,25 @@ namespace VoiceOfAKingdomDiscord.Modules
             return embed.Build();
         }
 
-        public Embed GetNewRequestEmbed(Request request)
+        public string GetStatChangesString(object obj)
         {
-            EmbedBuilder embed = new CustomEmbed()
-                .WithTitle(request.Person.Name)
-                .WithThumbnailUrl(request.Person.ImageLink)
-                .WithColor(request.Person.Color)
-                .WithDescription(request.Question)
-                .AddField(CommonScript.EmptyEmbedField());
-
             StringBuilder sb = new StringBuilder();
-            foreach (var property in request.KingdomStatsOnAccept.GetType().GetProperties())
+            foreach (var property in obj.GetType().GetProperties())
             {
-                if ((short)property.GetValue(request.KingdomStatsOnAccept) > 0)
+                if ((short)property.GetValue(obj) > 0)
                 {
-                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
+                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}");
                 }
-                else if ((short)property.GetValue(request.KingdomStatsOnAccept) < 0)
+                else if ((short)property.GetValue(obj) < 0)
                 {
-                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
+                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}");
+                }
+                else
+                {
+                    sb.AppendLine($"{STEADY_ICON} {property.Name}");
                 }
             }
-
-            foreach (var property in request.PersonalStatsOnAccept.GetType().GetProperties())
-            {
-                if ((short)property.GetValue(request.PersonalStatsOnAccept) > 0)
-                {
-                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
-                }
-                else if ((short)property.GetValue(request.PersonalStatsOnAccept) < 0)
-                {
-                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
-                }
-            }
-
-            embed.AddField(new EmbedFieldBuilder()
-                .WithIsInline(true)
-                .WithName("Stats Effects on Accept")
-                .WithValue(sb.ToString()));
-
-            sb.Clear();
-            foreach (var property in request.KingdomStatsOnReject.GetType().GetProperties())
-            {
-                if ((short)property.GetValue(request.KingdomStatsOnReject) > 0)
-                {
-                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
-                }
-                else if ((short)property.GetValue(request.KingdomStatsOnReject) < 0)
-                {
-                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
-                }
-            }
-
-            foreach (var property in request.PersonalStatsOnReject.GetType().GetProperties())
-            {
-                if ((short)property.GetValue(request.PersonalStatsOnReject) > 0)
-                {
-                    sb.AppendLine($"{UP_ARROW_SMALL} {property.Name}\n");
-                }
-                else if ((short)property.GetValue(request.PersonalStatsOnReject) < 0)
-                {
-                    sb.AppendLine($"{DOWN_ARROW_SMALL} {property.Name}\n");
-                }
-            }
-
-            embed.AddField(new EmbedFieldBuilder()
-                .WithIsInline(true)
-                .WithName("Stats Effects on Reject")
-                .WithValue(sb.ToString()));
-
-            return embed.Build();
+            return sb.ToString();
         }
 
         private string PrepareStatFieldValue(int stat)

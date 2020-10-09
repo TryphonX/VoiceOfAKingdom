@@ -8,19 +8,21 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     class Person
     {
-        public string Name { get; private set; }
-        public string ImageLink { get; private set; }
-        public Color Color { get; private set; }
+        public string Name { get; }
+        public string ImageLink { get; }
+        public Color Color { get; }
+        public string Icon { get; }
 
-        private Person(string name, string imgLink, Color color)
+        private Person(string name, string imgLink, Color color, string icon)
         {
             Name = name;
             ImageLink = imgLink;
             Color = color;
+            Icon = icon;
         }
 
-        public static Person General { get; } = new Person("General Liam Balliol", "https://i.imgur.com/KWEvPkK.png", Color.DarkOrange);
-        public static Person Folk { get; } = new Person("Astarte Mercia", "https://i.imgur.com/qV3c7ej.png", Color.Blue);
-        public static Person Noble { get; } = new Person("William Patrick", "https://i.imgur.com/yvc3BNe.png", Color.DarkPurple);
+        public static Person General { get; } = new Person("General Liam Balliol", "https://i.imgur.com/KWEvPkK.png", Color.DarkOrange, "🛡");
+        public static Person Folk { get; } = new Person("Astarte Mercia", "https://i.imgur.com/qV3c7ej.png", Color.Blue, ":banjo:");
+        public static Person Noble { get; } = new Person("William Patrick", "https://i.imgur.com/yvc3BNe.png", Color.DarkPurple, "👑");
     }
 }

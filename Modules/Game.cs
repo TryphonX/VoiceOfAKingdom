@@ -43,11 +43,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                 antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
-                ISocketMessageChannel channel = (ISocketMessageChannel)GameManager.GetGameChannel(this);
-                channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this)).Wait();
+                antecedent.Result.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this, App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)])).Wait();
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
-                channel.SendMessageAsync(embed: App.GameMgr.GetNewRequestEmbed(App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)]));
             });
         }
 
@@ -68,7 +66,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Military = (short)random.Next(40, 60);
             }
 
-            public KingdomStatsClass(short folks, short nobles, short military, short wealth)
+            public KingdomStatsClass(short folks = 0, short nobles = 0, short military = 0, short wealth = 0)
             {
                 Folks = folks;
                 Nobles = nobles;
@@ -89,7 +87,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Charisma = (short)random.Next(30, 60);
             }
 
-            public PersonalStatsClass(short happiness, short charisma)
+            public PersonalStatsClass(short happiness = 0, short charisma = 0)
             {
                 Happiness = happiness;
                 Charisma = charisma;
