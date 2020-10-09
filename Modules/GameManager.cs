@@ -131,7 +131,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             #region Military
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"{Person.Noble.Icon} Military: {game.KingdomStats.Military}")
+                .WithName($"{Person.General.Icon} Military: {game.KingdomStats.Military}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Military)));
             #endregion
 
