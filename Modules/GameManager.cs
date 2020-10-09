@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
@@ -18,6 +19,10 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short SMALL_CHANGE = 4;
         private const short MEDIUM_CHANGE = 9;
         private const short BIG_CHANGE = 12;
+        private const short MILITARY_THRESHOLD = 50;
+        private const short FOLK_THRESHOLD = 50;
+        private const short NOBLE_THRESHOLD = 50;
+        private const short WEALTH_THRESHOLD = 50;
 
         public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
@@ -55,10 +60,15 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        public static void EndGame(Game game)
+        public static void EndGame(Game game, bool skipMessage = false)
         {
             try
             {
+                if (!skipMessage)
+                {
+                    GetGameMessageChannel(game).SendMessageAsync("Game over.").Wait();
+                    Thread.Sleep(CommonScript.TIMEOUT_TIME);
+                }
                 GetGameGuildChannel(game).DeleteAsync();
             }
             catch (Exception e)
@@ -69,7 +79,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             App.GameMgr.Games.Remove(game);
         }
 
-        public static SocketGuildChannel GetGameGuildChannel(Game game)
+        private static SocketGuildChannel GetGameGuildChannel(Game game)
         {
             foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
             {
@@ -82,7 +92,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             return null;
         }
 
-        public static ISocketMessageChannel GetGameMessageChannel(Game game)
+        private static ISocketMessageChannel GetGameMessageChannel(Game game)
         {
             foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
             {
@@ -256,7 +266,8 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             GetGameMessageChannel(game).SendMessageAsync(embed: GetResolveRequestEmbed(game, accepted)).Wait();
 
-            // TODO: Add some chances to die here
+            if (CheckForBigEvents(game))
+                return;
 
             NextMonth(game);
         }
@@ -296,6 +307,94 @@ namespace VoiceOfAKingdomDiscord.Modules
             int maxDays = monthDays * 2 - game.Date.Day;
 
             return game.Date.AddDays(new Random().Next(minDays, maxDays));
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the game is ending.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        private static bool CheckForBigEvents(Game game)
+        {
+            Random rng = new Random();
+            
+            // Coup
+            if (game.KingdomStats.Military < 20)
+            {
+                if (rng.Next(0, 100) < MILITARY_THRESHOLD)
+                {
+                    return CoupStaged(game);
+                }
+                return false;
+            }
+            else if (game.KingdomStats.Folks < FOLK_THRESHOLD)
+            {
+                if (rng.Next(0, 100) < 30)
+                {
+                    // Revolution here
+                }
+                return false;
+
+            }
+            else if (game.KingdomStats.Nobles < NOBLE_THRESHOLD)
+            {
+                if (rng.Next(0, 100) < 30)
+                {
+                    // Rumors or something
+                }
+                return false;
+
+            }
+            else if (game.KingdomStats.Wealth < WEALTH_THRESHOLD)
+            {
+                if (rng.Next(0, 100) < 30)
+                {
+                    // No idea
+                }
+                return false;
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the game is ending.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        private static bool CoupStaged(Game game)
+        {
+            Random rng = new Random();
+            const short MURDER_THRESHOLD = 70;
+
+            if (rng.Next(0,100) < MURDER_THRESHOLD)
+            {
+                // Death
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithTitle("The military staged a coup!")
+                    .WithDescription("You were murdered.")
+                    .WithImageUrl("https://i.imgur.com/YfT1nJC.png")
+                    .Build()).Wait();
+
+                EndGame(game);
+                return true;
+            }
+            else
+            {
+                // Captured
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithTitle("The military staged a coup!")
+                    .WithDescription("You were captured.")
+                    .WithImageUrl("https://i.imgur.com/0Ugz4ds.png")
+                    .Build()).Wait();
+
+                // TODO: Maybe in the future pass years captured then break free
+                EndGame(game);
+                return true;
+            }
         }
     }
 }

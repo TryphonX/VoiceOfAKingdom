@@ -83,10 +83,22 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             public static KingdomStatsClass operator +(KingdomStatsClass kingdomStats, KingdomStatsClass incKingdomStats)
             {
-                kingdomStats.Folks += incKingdomStats.Folks;
-                kingdomStats.Nobles += incKingdomStats.Nobles;
-                kingdomStats.Wealth += incKingdomStats.Wealth;
-                kingdomStats.Military += incKingdomStats.Military;
+                kingdomStats.Folks = (short)(kingdomStats.Folks + incKingdomStats.Folks >= 0
+                    ? kingdomStats.Folks + incKingdomStats.Folks
+                    : 0);
+
+                kingdomStats.Nobles = (short)(kingdomStats.Nobles + incKingdomStats.Nobles >= 0
+                    ? kingdomStats.Nobles + incKingdomStats.Nobles
+                    : 0);
+
+                kingdomStats.Wealth = (short)(kingdomStats.Wealth + incKingdomStats.Wealth >= 0
+                    ? kingdomStats.Wealth + incKingdomStats.Wealth
+                    : 0);
+
+                kingdomStats.Military = (short)(kingdomStats.Military + incKingdomStats.Military >= 0
+                    ? kingdomStats.Military + incKingdomStats.Military
+                    : 0);
+
                 return kingdomStats;
             }
         }

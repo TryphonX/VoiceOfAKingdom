@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -28,38 +29,49 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 // Ignore any reaction by non-players
                 if (msg.Author.Id == App.Client.CurrentUser.Id &&
-                    App.GameMgr.Games.Any(game => game.PlayerID == reaction.UserId))
+                    App.GameMgr.Games.Any(game => game.PlayerID == reaction.UserId) &&
+                    App.GameMgr.Games.Count > 0)
                 {
-                    foreach (var game in App.GameMgr.Games)
+                    if (App.GameMgr.Games.Count == 0)
+                        return;
+
+                    try
                     {
-                        // Not the game's player
-                        if (reaction.UserId != game.PlayerID)
-                            continue;
+                        foreach (var game in App.GameMgr.Games)
+                        {
+                            // Not the game's player
+                            if (reaction.UserId != game.PlayerID)
+                                continue;
 
-                        // Not the game's channel
-                        // Safe to exit the task
-                        if (channel.Id != game.ChannelID)
-                            break;
+                            // Not the game's channel
+                            // Safe to exit the task
+                            if (channel.Id != game.ChannelID)
+                                break;
 
-                        if (reaction.Emote.Name.Equals(CommonScript.CHECKMARK))
-                        {
-                            // Proceed to next month calculations
-                            msg.RemoveAllReactionsAsync();
-                            GameManager.ResolveRequest(game, true);
+                            if (reaction.Emote.Name.Equals(CommonScript.CHECKMARK))
+                            {
+                                // Proceed to next month calculations
+                                msg.RemoveAllReactionsAsync();
+                                GameManager.ResolveRequest(game, true);
+                            }
+                            else if (reaction.Emote.Name.Equals(CommonScript.NO_ENTRY))
+                            {
+                                // Proceed to next month calculations
+                                msg.RemoveAllReactionsAsync();
+                                GameManager.ResolveRequest(game, false);
+                            }
+                            else
+                            {
+                                // Unexpected behavior
+                                // Someone most likely broke the permissions
+                                CommonScript.LogWarn("Invalid reaction. Possibly wrong permissions.");
+                                break;
+                            }
                         }
-                        else if (reaction.Emote.Name.Equals(CommonScript.NO_ENTRY))
-                        {
-                            // Proceed to next month calculations
-                            msg.RemoveAllReactionsAsync();
-                            GameManager.ResolveRequest(game, false);
-                        }
-                        else
-                        {
-                            // Unexpected behavior
-                            // Someone most likely broke the permissions
-                            CommonScript.LogWarn("Invalid reaction. Possibly wrong permissions.");
-                            break;
-                        }
+                    }
+                    catch (Exception)
+                    {
+                        CommonScript.DebugLog("Ghost reaction");
                     }
                 }
             });
