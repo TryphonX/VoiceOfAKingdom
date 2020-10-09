@@ -45,7 +45,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 ISocketMessageChannel channel = (ISocketMessageChannel)GameManager.GetGameChannel(this);
                 channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this)).Wait();
-                channel.SendMessageAsync(embed: App.GameMgr.GetPersonalStatsEmbed(this)).Wait();
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
             });

@@ -66,9 +66,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             EmbedBuilder embed = new CustomEmbed()
                 .WithTitle($"☀️ Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}")
-                .AddField(new EmbedFieldBuilder()
-                    .WithName("\u200B")
-                    .WithValue("\u200B"));
+                .WithDescription("==============================")
+                .AddField(CommonScript.EmptyEmbedField());
 
             #region Folks
             embed.AddField(new EmbedFieldBuilder()
@@ -84,9 +83,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Nobles)));
             #endregion
 
-            embed.AddField(new EmbedFieldBuilder()
-                .WithName("\u200B")
-                .WithValue("\u200B"));
+            embed.AddField(CommonScript.EmptyEmbedField());
 
             #region Military
             embed.AddField(new EmbedFieldBuilder()
@@ -102,17 +99,11 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Wealth)));
             #endregion
 
-            return embed.Build();
-        }
+            embed.AddField(CommonScript.EmptyEmbedField());
 
-        public Embed GetPersonalStatsEmbed(Game game)
-        {
-            EmbedBuilder embed = new CustomEmbed()
-                .WithColor(Color.DarkPurple)
-                .WithTitle($"🤔 Personal Info")
-                .AddField(new EmbedFieldBuilder()
-                    .WithName("\u200B")
-                    .WithValue("\u200B"));
+            embed.AddField(new EmbedFieldBuilder()
+                .WithName("🤔 Personal Info")
+                .WithValue("=============================="));
 
             #region Happiness
             embed.AddField(new EmbedFieldBuilder()
@@ -128,9 +119,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Sanity)));
             #endregion
 
-            embed.AddField(new EmbedFieldBuilder()
-                .WithName("\u200B")
-                .WithValue("\u200B"));
+            embed.AddField(CommonScript.EmptyEmbedField());
 
             #region Strength
             embed.AddField(new EmbedFieldBuilder()

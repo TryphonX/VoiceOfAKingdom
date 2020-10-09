@@ -66,5 +66,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             int rem = num % roundTo;
             return rem >= roundTo/2 ? (num - rem + roundTo) : (num - rem);
         }
+
+        public static EmbedFieldBuilder EmptyEmbedField()
+        {
+            return new EmbedFieldBuilder()
+                .WithName("\u200B")
+                .WithValue("\u200B");
+        }
     }
 }
