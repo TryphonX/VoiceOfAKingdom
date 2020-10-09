@@ -44,7 +44,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
                 ISocketMessageChannel channel = (ISocketMessageChannel)GameManager.GetGameChannel(this);
-                channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this));
+                channel.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this)).Wait();
+                channel.SendMessageAsync(embed: App.GameMgr.GetPersonalStatsEmbed(this)).Wait();
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
             });

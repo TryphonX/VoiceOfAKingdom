@@ -65,7 +65,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public Embed GetNewMonthEmbed(Game game)
         {
             EmbedBuilder embed = new CustomEmbed()
-                .WithTitle($"☀️ Month {game.MonthsInControl + 1} | {game.Date.ToLongDateString()}")
+                .WithTitle($"☀️ Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}")
                 .AddField(new EmbedFieldBuilder()
                     .WithName("\u200B")
                     .WithValue("\u200B"));
@@ -100,6 +100,50 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithIsInline(true)
                 .WithName($":coin: Wealth: {game.KingdomStats.Wealth}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Wealth)));
+            #endregion
+
+            return embed.Build();
+        }
+
+        public Embed GetPersonalStatsEmbed(Game game)
+        {
+            EmbedBuilder embed = new CustomEmbed()
+                .WithColor(Color.DarkPurple)
+                .WithTitle($"🤔 Personal Info")
+                .AddField(new EmbedFieldBuilder()
+                    .WithName("\u200B")
+                    .WithValue("\u200B"));
+
+            #region Happiness
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName($"😄 Happiness: {game.PersonalStats.Happiness}")
+                .WithValue(PrepareStatFieldValue(game.PersonalStats.Happiness)));
+            #endregion
+
+            #region Sanity
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName($"🧠 Sanity: {game.PersonalStats.Sanity}")
+                .WithValue(PrepareStatFieldValue(game.PersonalStats.Sanity)));
+            #endregion
+
+            embed.AddField(new EmbedFieldBuilder()
+                .WithName("\u200B")
+                .WithValue("\u200B"));
+
+            #region Strength
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName($"💪 Strength: {game.PersonalStats.Strength}")
+                .WithValue(PrepareStatFieldValue(game.PersonalStats.Strength)));
+            #endregion
+
+            #region Charisma
+            embed.AddField(new EmbedFieldBuilder()
+                .WithIsInline(true)
+                .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}")
+                .WithValue(PrepareStatFieldValue(game.PersonalStats.Charisma)));
             #endregion
 
             return embed.Build();
