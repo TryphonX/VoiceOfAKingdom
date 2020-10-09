@@ -13,7 +13,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public const string CHECKMARK = "✅";
         public const string NO_ENTRY = "⛔";
         // 1 min
-        public const int TIMEOUT_TIME = 30000;
+        public const int TIMEOUT_TIME = 120000;
 
         public static string Version { get; } = "0.1.0";
         public static string Author { get; } = "Tryphon Ksydas";

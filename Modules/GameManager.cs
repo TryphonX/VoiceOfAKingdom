@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading;
 
@@ -66,7 +67,17 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 if (!skipMessage)
                 {
-                    GetGameMessageChannel(game).SendMessageAsync("Game over.").Wait();
+                    int yearsInCommand = game.MonthsInControl/12;
+
+                    if (yearsInCommand == 1)
+                    {
+                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for 1 year and {game.MonthsInControl%12} months").Wait();
+                    }
+                    else
+                    {
+                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for {yearsInCommand} years and {game.MonthsInControl%12} months").Wait();
+                    }
+
                     Thread.Sleep(CommonScript.TIMEOUT_TIME);
                 }
                 GetGameGuildChannel(game).DeleteAsync();
@@ -310,7 +321,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the game is ending.
+        /// Returns <see langword="true"/> if you have to skip the next month.
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
@@ -331,7 +342,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 if (rng.Next(0, 100) < 30)
                 {
-                    // Revolution here
+                    return RevolutionStarted(game);
                 }
                 return false;
 
@@ -361,7 +372,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the game is ending.
+        /// Returns <see langword="true"/> if you have to skip the next month.
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
@@ -394,6 +405,64 @@ namespace VoiceOfAKingdomDiscord.Modules
                 // TODO: Maybe in the future pass years captured then break free
                 EndGame(game);
                 return true;
+            }
+        }
+
+        /// <summary>
+        /// Returns whether to skip next month or not.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        private static bool RevolutionStarted(Game game)
+        {
+            Random rng = new Random();
+            const short MURDER_THRESHOLD = 20;
+            const short CHARISMA_WAY_OUT_THRESHOLD = 50;
+
+            if (rng.Next(0, 100) < MURDER_THRESHOLD)
+            {
+                // Murder (most likely)
+                bool murdered = true;
+
+                StringBuilder storyLine = new StringBuilder("The crowds are forming. Torches, pitchforks and people shouting are setting the mood. " +
+                    "You can sense this is not going to end well... Some are throwing tomatoes towards your window. As you open the window, " +
+                    "you hear the crowds chanting \"Give us the King's head!\". The guards are forced to let some of them inside. Soon enough, " +
+                    "your door opens and the leader of the revolution along with 2 other men enter the room carrying their swords... ");
+
+                if (game.PersonalStats.Charisma > 80 && rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+                {
+                    // Charisma backdoor
+                    murdered = false;
+
+                    storyLine.Append("After listening to them for a while, you manage to calm them down and get away with all your mistakes, " +
+                        "thanks to your charisma. You had to agree to sign their constitution however, which is definitely going to mix things up " +
+                        "in your kingdom.");
+
+                    App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
+                }
+
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithTitle("You see a crowds forming outside your window!")
+                    .WithDescription(storyLine.ToString())
+                    .WithImageUrl(murdered ? "https://i.imgur.com/YfT1nJC.png" : "https://i.imgur.com/Mqu7IHl.png")
+                    .Build()).Wait();
+
+                if (murdered)
+                    EndGame(game);
+
+                return murdered;
+            }
+            else
+            {
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithTitle("You see a crowds forming outside your window!")
+                    .WithDescription("The crowds are forming. People are shouting at the top of their lungs. " +
+                    "Your nation is not happy with how you've been treating them. You decide to open the window and all you hear is people " +
+                    "chanting for a constitution. You have no option, but to give in to their demands. You signed their constitution.")
+                    .WithImageUrl("https://i.imgur.com/Mqu7IHl.png")
+                    .Build()).Wait();
+
+                return false;
             }
         }
     }

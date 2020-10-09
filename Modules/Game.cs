@@ -101,6 +101,13 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 return kingdomStats;
             }
+
+            public void InvertReputations()
+            {
+                Folks = (short)Math.Abs(40 - Folks);
+                Nobles = (short)Math.Abs(40 - Nobles);
+                Military = (short)Math.Abs(40 - Military);
+            }
         }
         public class PersonalStatsClass
         {
