@@ -9,14 +9,14 @@ namespace VoiceOfAKingdomDiscord.Modules
     class Person
     {
         public string Name { get; }
-        public string ImageLink { get; }
+        public string ImgUrl { get; }
         public Color Color { get; }
         public string Icon { get; }
 
         private Person(string name, string imgLink, Color color, string icon)
         {
             Name = name;
-            ImageLink = imgLink;
+            ImgUrl = imgLink;
             Color = color;
             Icon = icon;
         }

@@ -18,6 +18,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public int MonthsInControl { get; set; } = 0;
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
+        public Request CurrentRequest { get; set; }
 
         public Game(ulong userID, CommandHandler commandHandler)
         {
@@ -43,7 +44,13 @@ namespace VoiceOfAKingdomDiscord.Modules
                 antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
-                antecedent.Result.SendMessageAsync(embed: App.GameMgr.GetNewMonthEmbed(this, App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)])).Wait();
+                CurrentRequest = App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)];
+                antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
+                    .ContinueWith(antecedent =>
+                    {
+                        antecedent.Result.AddReactionAsync(new Emoji("✅")).Wait();
+                        antecedent.Result.AddReactionAsync(new Emoji("⛔")).Wait();
+                    });
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
             });
@@ -73,6 +80,15 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Military = military;
                 Wealth = wealth;
             }
+
+            public static KingdomStatsClass operator +(KingdomStatsClass kingdomStats, KingdomStatsClass incKingdomStats)
+            {
+                kingdomStats.Folks += incKingdomStats.Folks;
+                kingdomStats.Nobles += incKingdomStats.Nobles;
+                kingdomStats.Wealth += incKingdomStats.Wealth;
+                kingdomStats.Military += incKingdomStats.Military;
+                return kingdomStats;
+            }
         }
         public class PersonalStatsClass
         {
@@ -91,6 +107,13 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 Happiness = happiness;
                 Charisma = charisma;
+            }
+
+            public static PersonalStatsClass operator +(PersonalStatsClass personalStats, PersonalStatsClass incPersonalStats)
+            {
+                personalStats.Happiness += incPersonalStats.Happiness;
+                personalStats.Charisma += incPersonalStats.Charisma;
+                return personalStats;
             }
         }
     }

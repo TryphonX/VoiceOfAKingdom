@@ -10,16 +10,29 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     static class CommonScript
     {
+        public const string CHECKMARK = "✅";
+        public const string NO_ENTRY = "⛔";
+
         public static string Version { get; } = "0.1.0";
         public static string Author { get; } = "Tryphon Ksydas";
         public static string[] Collaborators { get; } = { "ZarOS69" };
         public static string Title { get; } = "Voice of a Kingdom";
+        public static int[] MonthsWith31Days { get; } = { 1, 3, 5, 7, 8, 10, 12 };
 
         public static void Log(string msg)
         {
             StackFrame stackFrame = new StackTrace(1, true).GetFrame(0);
 
             Console.WriteLine($"{msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
+        }
+
+        public static void LogWarn(string msg)
+        {
+            StackFrame stackFrame = new StackTrace(1, true).GetFrame(0);
+
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine($"{msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
+            Console.ResetColor();
         }
 
         public static void LogError(string msg)

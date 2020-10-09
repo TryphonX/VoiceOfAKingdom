@@ -6,18 +6,22 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     class Request
     {
-        public string Question { get; private set; }
-        public Person Person { get; private set; }
-        public Game.KingdomStatsClass KingdomStatsOnAccept { get; private set; }
-        public Game.KingdomStatsClass KingdomStatsOnReject { get; private set; }
-        public Game.PersonalStatsClass PersonalStatsOnAccept { get; private set; }
-        public Game.PersonalStatsClass PersonalStatsOnReject { get; private set; }
+        public string Question { get; }
+        public Person Person { get; }
+        public Game.KingdomStatsClass KingdomStatsOnAccept { get; }
+        public Game.KingdomStatsClass KingdomStatsOnReject { get; }
+        public Game.PersonalStatsClass PersonalStatsOnAccept { get; }
+        public Game.PersonalStatsClass PersonalStatsOnReject { get; }
+        public string ResponseOnAccepted { get; }
+        public string ResponseOnRejected { get; }
 
         public Request(string question, Person person,
             Game.KingdomStatsClass kingdomStatsOnAccept,
             Game.PersonalStatsClass personalStatsOnAccept,
             Game.KingdomStatsClass kingdomStatsOnReject,
-            Game.PersonalStatsClass personalStatsOnReject)
+            Game.PersonalStatsClass personalStatsOnReject,
+            string responseOnAccepted,
+            string responseOnRejected)
         {
             Question = question;
             Person = person;
@@ -25,6 +29,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             PersonalStatsOnAccept = personalStatsOnAccept;
             KingdomStatsOnReject = kingdomStatsOnReject;
             PersonalStatsOnReject = personalStatsOnReject;
+            ResponseOnAccepted = responseOnAccepted;
+            ResponseOnRejected = responseOnRejected;
         }
     }
 }
