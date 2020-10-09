@@ -73,7 +73,6 @@ namespace VoiceOfAKingdomDiscord.Commands
         private Embed PrepareHelpEmbedAll(CommandHandler commandHandler)
         {
             EmbedBuilder embed = new CustomEmbed()
-                .WithColor(Color.Gold);
 
             StringBuilder valueBuilder;
             foreach (Command command in commandHandler.Commands)

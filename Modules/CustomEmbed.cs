@@ -13,6 +13,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithText($"👑 Voice of a Kingdom v{CommonScript.Version}");
 
             WithFooter(footer);
+            WithColor(Discord.Color.Gold);
         }
     }
 }
