@@ -25,22 +25,25 @@ namespace VoiceOfAKingdomDiscord
                 new App().MainAsync().GetAwaiter().GetResult();
         }
 
+        /// <summary>
+        /// No idea if this even works anymore due to VS debugger bugs
+        /// The debugger decides to ignore the known bug where it doesn't exit
+        /// and goes for another bug: exiting before the code is even over.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            CommonScript.Log("Searching for running games");
+            CommonScript.Log("Ending running games");
 
-            int count = 0;
             if (GameMgr.Games.Count > 0)
             {
                 foreach (var game in GameMgr.Games)
                 {
                     // TODO: Save before ending
-                    count = GameManager.EndGame(game) ? ++count : count;
+                    GameManager.EndGame(game);
                 }
             }
-
-            if (count > 0)
-                CommonScript.Log($"{count} games ended");
 
             CommonScript.Log("Exiting");
 
@@ -50,7 +53,7 @@ namespace VoiceOfAKingdomDiscord
             if (Debugger.IsAttached)
                 Environment.Exit(1);
         }
-
+            
         public async Task MainAsync()
         {
             Client = new DiscordSocketClient();

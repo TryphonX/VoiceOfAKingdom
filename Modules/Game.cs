@@ -46,7 +46,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
                 CurrentRequest = GameManager.GetRandomRequest();
-                antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
+                antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this, true))
                     .ContinueWith(antecedent =>
                     {
                         antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();

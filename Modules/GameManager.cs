@@ -8,6 +8,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -103,7 +104,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         public static bool EndGame(Game game)
         {
-            bool success = false;
+            bool success;
             try
             {
                 success = true;
@@ -112,6 +113,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
             catch (Exception e)
             {
+                success = false;
                 CommonScript.LogError(e.Message);
             }
 
@@ -162,8 +164,18 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <param name="game"></param>
         /// <param name="request"></param>
         /// <returns>The new month embed.</returns>
-        public static Embed GetNewMonthEmbed(Game game)
+        public static Embed GetNewMonthEmbed(Game game, bool isFirstMonth,
+            Game.KingdomStatsClass kingdomStatsChanges = null,
+            Game.PersonalStatsClass personalStatsChanges = null)
         {
+            // Check for mistakes
+            if (!isFirstMonth &&
+                (kingdomStatsChanges == null ||
+                personalStatsChanges == null))
+            {
+                CommonScript.LogError("Empty kingdom/personal stats.");
+            }
+
             // Base
             EmbedBuilder embed = new CustomEmbed()
                 .WithAuthor(new EmbedAuthorBuilder()
@@ -188,8 +200,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithName("Changes on Accept")
                 .WithValue(sb.ToString()));
             #endregion
-
             sb.Clear();
+
             #region On Reject
             // Same things as on accept
             sb.Append(GetStatChangesString(game.CurrentRequest.KingdomStatsOnReject));
@@ -200,20 +212,23 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithName("Changes on Reject")
                 .WithValue(sb.ToString()));
             #endregion
+            sb.Clear();
 
             embed.AddField(CommonScript.EmptyEmbedField());
 
-            #region Folks
+            #region Folks 
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"{Person.Folk.Icon} Folks: {game.KingdomStats.Folks}")
+                .WithName($"{Person.Folk.Icon} Folks: {game.KingdomStats.Folks}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Folks : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Folks)));
             #endregion
 
             #region Nobles
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"{Person.Noble.Icon} Nobles: {game.KingdomStats.Nobles}")
+                .WithName($"{Person.Noble.Icon} Nobles: {game.KingdomStats.Nobles}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Nobles : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Nobles)));
             #endregion
 
@@ -222,14 +237,16 @@ namespace VoiceOfAKingdomDiscord.Modules
             #region Military
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"{Person.General.Icon} Military: {game.KingdomStats.Military}")
+                .WithName($"{Person.General.Icon} Military: {game.KingdomStats.Military}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Military : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Military)));
             #endregion
 
             #region Wealth
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($":coin: Wealth: {game.KingdomStats.Wealth}")
+                .WithName($":coin: Wealth: {game.KingdomStats.Wealth}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Wealth : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Wealth)));
             #endregion
 
@@ -242,18 +259,33 @@ namespace VoiceOfAKingdomDiscord.Modules
             #region Happiness
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"😄 Happiness: {game.PersonalStats.Happiness}")
+                .WithName($"😄 Happiness: {game.PersonalStats.Happiness}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? personalStatsChanges.Happiness : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Happiness)));
             #endregion
 
             #region Charisma
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
-                .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}")
+                .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}" +
+                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? personalStatsChanges.Charisma : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Charisma)));
             #endregion
 
             return embed.Build();
+        }
+
+        private static string GetChangeEmoji(bool isFirstMonth, short change)
+        {
+            if (isFirstMonth)
+                return string.Empty;
+
+            if (change > 0)
+                return $" {UP_ARROW_SMALL}";
+            else if (change < 0)
+                return $" {DOWN_ARROW_SMALL}";
+            else
+                return $" {STEADY_ICON}";
         }
 
         /// <summary>
@@ -320,7 +352,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             if (CheckForBigEvents(game))
                 return;
 
-            NextMonth(game);
+            NextMonth(game, accepted);
         }
 
         private static Embed GetResolveRequestEmbed(Game game, bool accepted)
@@ -334,13 +366,15 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .Build();
         }
 
-        private static void NextMonth(Game game)
+        private static void NextMonth(Game game, bool accepted)
         {
+            Game.KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
+            Game.PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
             game.CurrentRequest = GetRandomRequest();
 
             game.Date = AddMonthToDate(game.Date);
 
-            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game))
+            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game, false, cachedKingdomChanges, cachedPersonalChanges))
                 .ContinueWith(antecedent =>
                 {
                     // Block answers if you don't have the money for them
