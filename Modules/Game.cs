@@ -44,12 +44,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                 antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
                     new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
 
-                CurrentRequest = App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)];
+                CurrentRequest = GameManager.GetRandomRequest();
                 antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
                     .ContinueWith(antecedent =>
                     {
-                        antecedent.Result.AddReactionAsync(new Emoji("✅")).Wait();
-                        antecedent.Result.AddReactionAsync(new Emoji("⛔")).Wait();
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
                     });
 
                 commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
@@ -83,25 +83,24 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             public static KingdomStatsClass operator +(KingdomStatsClass kingdomStats, KingdomStatsClass incKingdomStats)
             {
-                kingdomStats.Folks = (short)(kingdomStats.Folks + incKingdomStats.Folks >= 0
-                    ? kingdomStats.Folks + incKingdomStats.Folks
-                    : 0);
+                kingdomStats.Folks += incKingdomStats.Folks;
+                kingdomStats.Folks = CommonScript.Check0To100Range(kingdomStats.Folks);
 
-                kingdomStats.Nobles = (short)(kingdomStats.Nobles + incKingdomStats.Nobles >= 0
-                    ? kingdomStats.Nobles + incKingdomStats.Nobles
-                    : 0);
+                kingdomStats.Nobles += incKingdomStats.Nobles;
+                kingdomStats.Nobles = CommonScript.Check0To100Range(kingdomStats.Nobles);
 
-                kingdomStats.Wealth = (short)(kingdomStats.Wealth + incKingdomStats.Wealth >= 0
-                    ? kingdomStats.Wealth + incKingdomStats.Wealth
-                    : 0);
+                kingdomStats.Wealth += incKingdomStats.Wealth;
+                kingdomStats.Wealth = CommonScript.Check0To100Range(kingdomStats.Wealth);
 
-                kingdomStats.Military = (short)(kingdomStats.Military + incKingdomStats.Military >= 0
-                    ? kingdomStats.Military + incKingdomStats.Military
-                    : 0);
+                kingdomStats.Military += incKingdomStats.Military;
+                kingdomStats.Military = CommonScript.Check0To100Range(kingdomStats.Military);
 
                 return kingdomStats;
             }
 
+            /// <summary>
+            /// Well ALMOST invert them. Inverting them would be too harsh on the player.
+            /// </summary>
             public void InvertReputations()
             {
                 Folks = (short)Math.Abs(40 - Folks);
@@ -139,7 +138,11 @@ namespace VoiceOfAKingdomDiscord.Modules
             public static PersonalStatsClass operator +(PersonalStatsClass personalStats, PersonalStatsClass incPersonalStats)
             {
                 personalStats.Happiness += incPersonalStats.Happiness;
+                personalStats.Happiness = CommonScript.Check0To100Range(personalStats.Happiness);
+
                 personalStats.Charisma += incPersonalStats.Charisma;
+                personalStats.Charisma = CommonScript.Check0To100Range(personalStats.Charisma);
+
                 return personalStats;
             }
 

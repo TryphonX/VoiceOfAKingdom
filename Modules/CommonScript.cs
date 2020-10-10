@@ -88,5 +88,19 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithName("\u200B")
                 .WithValue("\u200B");
         }
+
+        public static short Check0To100Range(short stat)
+        {
+            if (stat > 100)
+            {
+                stat = 100;
+            }
+            else if (stat < 0)
+            {
+                stat = 0;
+            }
+
+            return stat;
+        }
     }
 }

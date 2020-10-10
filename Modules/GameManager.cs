@@ -18,9 +18,9 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
-        private const short SMALL_CHANGE = 4;
-        private const short MEDIUM_CHANGE = 9;
-        private const short BIG_CHANGE = 12;
+        private const short SMALL_CHANGE = 3;
+        private const short MEDIUM_CHANGE = 7;
+        private const short BIG_CHANGE = 18;
         private const short MILITARY_THRESHOLD = 50;
         private const short FOLK_THRESHOLD = 50;
         private const short NOBLE_THRESHOLD = 50;
@@ -305,8 +305,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game))
                 .ContinueWith(antecedent =>
                 {
-                    antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
-                    antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
+                    // Block answers if you don't have the money for them
+                    if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnAccept.Wealth)
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
+                    
+                    if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnReject.Wealth)
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
                 });
         }
 
