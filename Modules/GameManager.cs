@@ -344,18 +344,17 @@ namespace VoiceOfAKingdomDiscord.Modules
                 }
             }
             
-            if (game.KingdomStats.Folks < FOLK_THRESHOLD)
+            if (game.KingdomStats.Folks < 20)
             {
-                if (rng.Next(0, 100) < 30)
+                if (rng.Next(0, 100) < FOLK_THRESHOLD)
                 {
                     return RevolutionStarted(game);
                 }
-
             }
             
-            if (game.KingdomStats.Nobles < NOBLE_THRESHOLD)
+            if (game.KingdomStats.Nobles < 20)
             {
-                if (rng.Next(0, 100) < 30)
+                if (rng.Next(0, 100) < NOBLE_THRESHOLD)
                 {
                     return AssassinationAttempted(game);
                 }
@@ -364,10 +363,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             
             if (game.KingdomStats.Wealth == 0)
             {
-                if (rng.Next(0, 100) < 30)
-                {
-                    return ReachedBankruptcy(game);
-                }
+                return ReachedBankruptcy(game);
             }
 
             return false;
@@ -469,6 +465,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.RaisedFist)
                     .Build()).Wait();
 
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
                 return false;
             }
         }
@@ -543,7 +540,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             Random rng = new Random();
 
-            if (game.KingdomStats.Military > 60 && rng.Next(0, 100) < 50)
+            if (game.KingdomStats.Military > 70 && rng.Next(0, 100) < 50)
             {
                 // Got ally
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
