@@ -320,7 +320,20 @@ namespace VoiceOfAKingdomDiscord.Modules
         private static DateTime AddMonthToDate(DateTime date)
         {
             int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == date.Month) ? 31 : 30;
-            int minDays = monthDays - date.Day;
+
+            if (date.Month == 2)
+            {
+                if (date.Year % 4 == 0)
+                {
+                    monthDays = 29;
+                }
+                else
+                {
+                    monthDays = 28;
+                }
+            }
+
+            int minDays = monthDays - date.Day + 1;
             int maxDays = monthDays * 2 - date.Day;
 
             return date.AddDays(new Random().Next(minDays, maxDays));
