@@ -382,7 +382,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 // Death
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
-                    .WithColor(Color.DarkPurple)
+                    .WithColor(Color.DarkRed)
                     .WithTitle("The military staged a coup!")
                     .WithDescription("You were murdered.")
                     .WithImageUrl(Image.WarriorSide)
@@ -478,7 +478,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 // Charisma backdoor
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
-                    .WithColor(Color.DarkBlue)
+                    .WithColor(Color.Blue)
                     .WithTitle("Not the sharpest tool in the shed...")
                     .WithDescription("You've been making quite a lot of enemies in the wealthy circles. Unlike folks, nobles " +
                     "will not be as obvious about their moves... You were hanging out at a tavern with some folks, when you noticed " +
