@@ -19,7 +19,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static string Bloodbath { get { return new Image("https://i.imgur.com/2fUMEIl.png").value; } }
         public static string RaisedFist { get { return new Image("https://i.imgur.com/Mqu7IHl.png").value; } }
         public static string HitBackOfHelmet { get { return new Image("https://i.imgur.com/SQPfclQ.png").value; } }
-
+        public static string HoldingSwordToTheSky { get { return new Image("https://i.imgur.com/dZNZnPP.png").value; } }
+        public static string DroppedSword { get { return new Image("https://i.imgur.com/V1dIY1I.png").value; } }
 
         private Image(string value)
         {

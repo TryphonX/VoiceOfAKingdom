@@ -24,7 +24,6 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short MILITARY_THRESHOLD = 50;
         private const short FOLK_THRESHOLD = 50;
         private const short NOBLE_THRESHOLD = 50;
-        private const short WEALTH_THRESHOLD = 50;
 
         public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
@@ -357,11 +356,11 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             }
             
-            if (game.KingdomStats.Wealth < WEALTH_THRESHOLD)
+            if (game.KingdomStats.Wealth == 0)
             {
                 if (rng.Next(0, 100) < 30)
                 {
-                    // No idea
+                    return ReachedBankruptcy(game);
                 }
             }
 
@@ -489,8 +488,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.HitBackOfHelmet)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.IncValues(incHappiness: SMALL_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                    .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.
+                    IncValues(incHappiness: SMALL_CHANGE);
                 return false;
             }
             else if (rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
@@ -509,8 +510,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.PointingSword)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.IncValues(incHappiness: -MEDIUM_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                    .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
+                    .IncValues(incHappiness: -MEDIUM_CHANGE);
                 return false;
             }
             else
@@ -523,6 +526,48 @@ namespace VoiceOfAKingdomDiscord.Modules
                     "will not be as obvious about their moves... And that's exactly what you felt at your back as you were leaving a tavern. " +
                     "An assassin immediately backstabbed you as you got out and ran away before anyone could stop them. No one managed to save you.")
                     .WithImageUrl(Image.BloodySwordDarkPurple)
+                    .Build()).Wait();
+
+                EndGame(game);
+                return true;
+            }
+        }
+
+        private static bool ReachedBankruptcy(Game game)
+        {
+            Random rng = new Random();
+
+            if (game.KingdomStats.Military > 60 && rng.Next(0, 100) < 50)
+            {
+                // Got ally
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.Blue)
+                    .WithTitle("Close call.")
+                    .WithDescription("The ecenomy was getting worse by the minute. The nation's treasury was almost empty. " +
+                    "You could see the end getting closer... You spent days and nights thinking about ways to get the nation's " +
+                    "economy back to its glorious days with no success. The knocking on your door wakes you up. A neighboring nation " +
+                    "is interested in getting you as their ally due to your powerful military. Of course, nothing in life comes " +
+                    "without a cost. They are willing to pay you to be on their side.")
+                    .WithImageUrl(Image.HoldingSwordToTheSky)
+                    .Build()).Wait();
+
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                    .IncValues(incFolks: -SMALL_CHANGE, incMilitary: -SMALL_CHANGE, incWealth: BIG_CHANGE);
+
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
+                    .IncValues(incHappiness: BIG_CHANGE, incCharisma: SMALL_CHANGE);
+                return false;
+            }
+            else
+            {
+                // Bankruptcy
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkRed)
+                    .WithTitle("The treasury is empty!")
+                    .WithDescription("There is nothing left in the national treasury. We've used up all our gold and we " +
+                    "have to officially declare bankruptcy. You know people will not like this, so you decide to take the " +
+                    "easy way out.")
+                    .WithImageUrl(Image.DroppedSword)
                     .Build()).Wait();
 
                 EndGame(game);
