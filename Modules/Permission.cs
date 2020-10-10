@@ -24,8 +24,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static Permission AnyonePermission { get { return new Permission(PermissionPower.Anyone); } }
 
-        public static Permission PlayerPermission { get { return new Permission(PermissionPower.Player); } }
-
         public static Permission OwnerPermission { get { return new Permission(PermissionPower.Owner); } }
 
         private Permission(PermissionPower power)
@@ -38,7 +36,6 @@ namespace VoiceOfAKingdomDiscord.Modules
     public enum PermissionPower
     {
         Anyone,
-        Player,
         Owner
     }
 }
