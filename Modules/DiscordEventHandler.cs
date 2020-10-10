@@ -17,6 +17,21 @@ namespace VoiceOfAKingdomDiscord.Modules
             App.Client.Log += Client_Log;
             App.Client.MessageReceived += Client_MessageReceived;
             App.Client.ReactionAdded += Client_ReactionAdded;
+            App.Client.LatencyUpdated += Client_LatencyUpdated;
+        }
+
+        private static Task Client_LatencyUpdated(int previousLatency, int currentLatency)
+        {
+            if (currentLatency >= 400 && previousLatency < 400)
+            {
+                CommonScript.LogWarn($"High latency noted.\tLatency: {currentLatency}");
+            }
+            else if (currentLatency < 400 && previousLatency >= 400)
+            {
+                CommonScript.LogWarn($"Latency dropped.\tLatency: {currentLatency}");
+            }
+
+            return Task.CompletedTask;
         }
 
         private static Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel channel, SocketReaction reaction)

@@ -19,7 +19,14 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(cmdHandler);
 
-            cmdHandler.Msg.Channel.SendMessageAsync("pong!");
+            int ping = App.Client.Latency;
+
+            if (ping > 400)
+            {
+                CommonScript.LogWarn($"High latency noted.\tLatency: {ping}");
+            }
+
+            cmdHandler.Msg.Channel.SendMessageAsync($"Response time: `{ping}ms`");
         }
     }
 }

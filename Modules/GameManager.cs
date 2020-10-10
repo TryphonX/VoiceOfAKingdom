@@ -72,12 +72,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                     if (yearsInCommand == 1)
                     {
                         GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for 1 year " +
-                            $"and {game.MonthsInControl%12} months").Wait();
+                            $"and {game.MonthsInControl-2%12} months.").Wait();
                     }
                     else
                     {
                         GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for {yearsInCommand} years " +
-                            $"and {game.MonthsInControl%12} months").Wait();
+                            $"and {game.MonthsInControl-2%12} months.").Wait();
                     }
 
                     Thread.Sleep(CommonScript.TIMEOUT_TIME);
@@ -92,6 +92,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             App.GameMgr.Games.Remove(game);
         }
 
+        /// <summary>
+        /// Returns the game's GUILD channel.
+        /// <para>Only useful for things like deleting the channel, permissions, etc.</para>
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
         private static SocketGuildChannel GetGameGuildChannel(Game game)
         {
             foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
@@ -105,6 +111,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             return null;
         }
 
+        /// <summary>
+        /// Returns the game's MESSAGE channel.
+        /// <para>Useful for things like sending messages, adding reactions, etc</para>
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
         private static ISocketMessageChannel GetGameMessageChannel(Game game)
         {
             foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
