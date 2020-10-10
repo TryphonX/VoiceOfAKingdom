@@ -385,7 +385,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithColor(Color.DarkPurple)
                     .WithTitle("The military staged a coup!")
                     .WithDescription("You were murdered.")
-                    .WithImageUrl("https://i.imgur.com/YfT1nJC.png")
+                    .WithImageUrl(Image.WarriorSide)
                     .Build()).Wait();
 
                 EndGame(game);
@@ -398,7 +398,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithColor(Color.Purple)
                     .WithTitle("The military staged a coup!")
                     .WithDescription("You were captured.")
-                    .WithImageUrl("https://i.imgur.com/0Ugz4ds.png")
+                    .WithImageUrl(Image.PointingSword)
                     .Build()).Wait();
 
                 // TODO: Maybe in the future pass years captured then break free
@@ -444,7 +444,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithColor(murdered ? Color.DarkRed : Color.Orange)
                     .WithTitle("You see a crowds forming outside your window!")
                     .WithDescription(storyLine.ToString())
-                    .WithImageUrl(murdered ? "https://i.imgur.com/ZcHUd5T.png" : "https://i.imgur.com/Mqu7IHl.png")
+                    .WithImageUrl(murdered ? Image.Bloodbath : Image.RaisedFist)
                     .Build()).Wait();
 
                 if (murdered)
@@ -461,7 +461,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithDescription("The crowds are forming. People are shouting at the top of their lungs. " +
                     "Your nation is not happy with how you've been treating them. You decide to open the window and all you hear is people " +
                     "chanting for a constitution. You have no option, but to give in to their demands. You signed their constitution.")
-                    .WithImageUrl("https://i.imgur.com/Mqu7IHl.png")
+                    .WithImageUrl(Image.RaisedFist)
                     .Build()).Wait();
 
                 return false;
@@ -486,11 +486,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                     "You are immediately followed by the suspicious person and soon enough they are surrounded by your guards " +
                     "and folks. You convince them to give away their boss and then jail them. The noble who hired the assassin left " +
                     "the country and nobles will not be attempting anything against you for a while.")
-                    .WithImageUrl("https://imgur.com/SQPfclQ.png")
+                    .WithImageUrl(Image.HitBackOfHelmet)
                     .Build()).Wait();
 
                 App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
                 App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.IncValues(incHappiness: SMALL_CHANGE);
+                return false;
             }
             else if (rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
             {
@@ -505,7 +506,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     "for a while until you manage to tackle the assassin, throwing them behind the bar of the tavern and force them to surrender " +
                     "pointing your sword at their neck. The assassin was decapitated the next day. The medical staff took care of your wounds " +
                     "when you got back. No noble will attempt this again anytime soon.")
-                    .WithImageUrl("https://imgur.com/0Ugz4ds.png")
+                    .WithImageUrl(Image.PointingSword)
                     .Build()).Wait();
 
                 App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
@@ -521,7 +522,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithDescription("You've been making quite a lot of enemies in the wealthy circles. Unlike folks, nobles " +
                     "will not be as obvious about their moves... And that's exactly what you felt at your back as you were leaving a tavern. " +
                     "An assassin immediately backstabbed you as you got out and ran away before anyone could stop them. No one managed to save you.")
-                    .WithImageUrl("https://i.imgur.com/YfT1nJC.png")
+                    .WithImageUrl(Image.BloodySwordDarkPurple)
                     .Build()).Wait();
 
                 EndGame(game);

@@ -50,29 +50,29 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             #region Setup
             private ConfigSection(string value) =>
-                Value = value;
+                this.value = value;
 
-            private string Value { get; }
+            private readonly string value;
             #endregion
 
-            public static string App { get { return new ConfigSection("App").Value; } }
-            public static string Preferences { get { return new ConfigSection("Preferences").Value; } }
+            public static string App { get { return new ConfigSection("App").value; } }
+            public static string Preferences { get { return new ConfigSection("Preferences").value; } }
         }
 
         private class ConfigKey
         {
             #region Setup
             private ConfigKey(string value) =>
-                Value = value;
+                this.value = value;
 
-            private string Value { get; }
+            private readonly string value;
             #endregion
 
-            public static string Token { get { return new ConfigKey("Token").Value; } }
-            public static string OwnerID { get { return new ConfigKey("OwnerID").Value; } }
-            public static string IsDebug { get { return new ConfigKey("IsDebug").Value; } }
-            public static string Prefix { get { return new ConfigKey("Prefix").Value; } }
-            public static string GamesCategoryID { get { return new ConfigKey("GamesCategoryID").Value; } }
+            public static string Token { get { return new ConfigKey("Token").value; } }
+            public static string OwnerID { get { return new ConfigKey("OwnerID").value; } }
+            public static string IsDebug { get { return new ConfigKey("IsDebug").value; } }
+            public static string Prefix { get { return new ConfigKey("Prefix").value; } }
+            public static string GamesCategoryID { get { return new ConfigKey("GamesCategoryID").value; } }
         }
 
         #endregion

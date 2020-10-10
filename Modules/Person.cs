@@ -21,8 +21,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             Icon = icon;
         }
 
-        public static Person General { get; } = new Person("General Liam Balliol", "https://i.imgur.com/8fcGW6K.png", Color.DarkOrange, "🛡");
-        public static Person Folk { get; } = new Person("Astarte Mercia", "https://i.imgur.com/qV3c7ej.png", Color.Blue, "✊");
-        public static Person Noble { get; } = new Person("William Patrick", "https://i.imgur.com/yvc3BNe.png", Color.DarkPurple, "👑");
+        public static Person General { get; } = new Person("General Liam Balliol", Image.WarriorRaisedFist, Color.DarkOrange, "🛡");
+        public static Person Folk { get; } = new Person("Astarte Mercia", Image.WomanWithRose, Color.Blue, "✊");
+        public static Person Noble { get; } = new Person("William Patrick", Image.ComicManGoldenArmor, Color.DarkPurple, "👑");
     }
 }
