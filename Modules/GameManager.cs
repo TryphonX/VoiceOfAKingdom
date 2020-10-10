@@ -61,35 +61,52 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        public static void EndGame(Game game, bool skipMessage = false)
+        public static void SendEndGameMsg(Game game, bool skipMessage = false)
         {
             try
             {
-                if (!skipMessage)
-                {
-                    int yearsInCommand = ++game.MonthsInControl/12;
+                SetDead(game);
 
-                    if (yearsInCommand == 1)
-                    {
-                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for 1 year " +
-                            $"and {game.MonthsInControl-2%12} months.").Wait();
-                    }
-                    else
-                    {
-                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for {yearsInCommand} years " +
-                            $"and {game.MonthsInControl-2%12} months.").Wait();
-                    }
+                int yearsInCommand = game.MonthsInControl / 12;
+                int monthsInCommand = (game.MonthsInControl - 1) % 12;
 
-                    Thread.Sleep(CommonScript.TIMEOUT_TIME);
-                }
-                GetGameGuildChannel(game).DeleteAsync();
+                string yearsWord = yearsInCommand != 1 ? "years" : "year";
+                string monthsWords = monthsInCommand != 1 ? "months" : "month";
+
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.Teal)
+                    .WithTitle("Game over.")
+                    .WithDescription($"You ruled for {yearsInCommand} {yearsWord} and {monthsInCommand} {monthsWords}")
+                    .WithThumbnailUrl(Image.WolfShield)
+                    .AddField(new EmbedFieldBuilder()
+                        .WithName("End game?")
+                        .WithValue("Hit the reaction below to confirm you've read this message."))
+                    .Build())
+                    .ContinueWith(antecedent =>
+                    {
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK));
+                    });
             }
             catch (Exception e)
             {
                 CommonScript.LogError(e.Message);
             }
+        }
 
-            App.GameMgr.Games.Remove(game);
+        private static void SetDead(Game game) =>
+            App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).IsDead = true;
+
+        public static void EndGame(Game game)
+        {
+            try
+            {
+                GetGameGuildChannel(game).DeleteAsync();
+                App.GameMgr.Games.Remove(game);
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+            }
         }
 
         /// <summary>
@@ -414,7 +431,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.WarriorSide)
                     .Build()).Wait();
 
-                EndGame(game);
+                SendEndGameMsg(game);
                 return true;
             }
             else
@@ -428,7 +445,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 // TODO: Maybe in the future pass years captured then break free
-                EndGame(game);
+                SendEndGameMsg(game);
                 return true;
             }
         }
@@ -474,7 +491,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 if (murdered)
-                    EndGame(game);
+                    SendEndGameMsg(game);
 
                 return murdered;
             }
@@ -556,7 +573,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.BloodySwordDarkPurple)
                     .Build()).Wait();
 
-                EndGame(game);
+                SendEndGameMsg(game);
                 return true;
             }
         }
@@ -598,7 +615,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.DroppedSword)
                     .Build()).Wait();
 
-                EndGame(game);
+                SendEndGameMsg(game);
                 return true;
             }
         }

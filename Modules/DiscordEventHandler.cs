@@ -2,9 +2,7 @@ using Discord;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -77,12 +75,30 @@ namespace VoiceOfAKingdomDiscord.Modules
                     if (reaction.Emote.Name.Equals(CommonScript.CHECKMARK))
                     {
                         // Proceed to next month calculations
-                        InitNewMonthPreparations(channel, reaction, game, true);
+                        // Or end the game
+                        if (!game.IsDead)
+                        {
+                            InitNewMonthPreparations(channel, reaction, game, true);
+                        }
+                        else
+                        {
+                            GameManager.EndGame(game);
+                            break;
+                        }
                     }
                     else if (reaction.Emote.Name.Equals(CommonScript.NO_ENTRY))
                     {
                         // Proceed to next month calculations
-                        InitNewMonthPreparations(channel, reaction, game, false);
+                        if (!game.IsDead)
+                        {
+                            InitNewMonthPreparations(channel, reaction, game, false);
+                        }
+                        else
+                        {
+                            CommonScript.LogWarn("Invalid reaction for a finished game. Possibly wrong permissions.");
+                            GameManager.EndGame(game);
+                            break;
+                        }
                     }
                     else
                     {
@@ -117,25 +133,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static Task OnMessageReceived(SocketMessage msg)
         {
-            // Game over. You ruled for {yearsInCommand} years " +
-            // $"and {game.MonthsInControl - 2 % 12} months.
-            if (msg.Author.Id == App.Client.CurrentUser.Id &&
-                Regex.IsMatch(msg.Content, @"^Game over. You ruled for \d*? years? and \d*? months\.$"))
-            {
-                foreach (var game in App.GameMgr.Games)
-                {
-                    if (msg.Channel.Id != game.ChannelID)
-                        continue;
-
-                    Thread.Sleep(CommonScript.TIMEOUT_TIME);
-
-                    GameManager.EndGame(game);
-                    break;
-                }
-
-                return Task.CompletedTask;
-            }
-            else if (!msg.Content.StartsWith(Config.Prefix) || msg.Author.IsBot)
+            if (!msg.Content.StartsWith(Config.Prefix) || msg.Author.IsBot)
                 return Task.CompletedTask;
 
             new CommandHandler().Run(msg);

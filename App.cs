@@ -28,7 +28,7 @@ namespace VoiceOfAKingdomDiscord
         {
             foreach (var game in GameMgr.Games)
             {
-                GameManager.EndGame(game);
+                GameManager.SendEndGameMsg(game);
             }
         }
 

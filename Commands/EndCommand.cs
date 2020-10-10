@@ -23,7 +23,7 @@ namespace VoiceOfAKingdomDiscord.Commands
             {
                 cmdHandler.Msg.Channel.SendMessageAsync("You ended your game.");
 
-                GameManager.EndGame(game, true);
+                GameManager.EndGame(game);
             }
             else
             {
