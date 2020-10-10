@@ -4,6 +4,7 @@ using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Reflection.Metadata.Ecma335;
@@ -67,7 +68,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 if (!skipMessage)
                 {
-                    int yearsInCommand = game.MonthsInControl/12;
+                    int yearsInCommand = ++game.MonthsInControl/12;
 
                     if (yearsInCommand == 1)
                     {
@@ -298,7 +299,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             game.CurrentRequest = GetRandomRequest();
 
-            game.Date = AddMonthToDate(game);
+            game.Date = AddMonthToDate(game.Date);
 
             GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game))
                 .ContinueWith(antecedent =>
@@ -311,13 +312,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static Request GetRandomRequest() =>
             App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)];
 
-        private static DateTime AddMonthToDate(Game game)
+        private static DateTime AddMonthToDate(DateTime date)
         {
-            int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == game.Date.Month) ? 31 : 30;
-            int minDays = monthDays - game.Date.Day;
-            int maxDays = monthDays * 2 - game.Date.Day;
+            int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == date.Month) ? 31 : 30;
+            int minDays = monthDays - date.Day;
+            int maxDays = monthDays * 2 - date.Day;
 
-            return game.Date.AddDays(new Random().Next(minDays, maxDays));
+            return date.AddDays(new Random().Next(minDays, maxDays));
         }
 
         /// <summary>
@@ -336,39 +337,35 @@ namespace VoiceOfAKingdomDiscord.Modules
                 {
                     return CoupStaged(game);
                 }
-                return false;
             }
-            else if (game.KingdomStats.Folks < FOLK_THRESHOLD)
+            
+            if (game.KingdomStats.Folks < FOLK_THRESHOLD)
             {
                 if (rng.Next(0, 100) < 30)
                 {
                     return RevolutionStarted(game);
                 }
-                return false;
 
             }
-            else if (game.KingdomStats.Nobles < NOBLE_THRESHOLD)
+            
+            if (game.KingdomStats.Nobles < NOBLE_THRESHOLD)
             {
                 if (rng.Next(0, 100) < 30)
                 {
-                    // Rumors or something
+                    return AssassinationAttempted(game);
                 }
-                return false;
 
             }
-            else if (game.KingdomStats.Wealth < WEALTH_THRESHOLD)
+            
+            if (game.KingdomStats.Wealth < WEALTH_THRESHOLD)
             {
                 if (rng.Next(0, 100) < 30)
                 {
                     // No idea
                 }
-                return false;
+            }
 
-            }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -385,6 +382,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 // Death
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkPurple)
                     .WithTitle("The military staged a coup!")
                     .WithDescription("You were murdered.")
                     .WithImageUrl("https://i.imgur.com/YfT1nJC.png")
@@ -397,6 +395,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 // Captured
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.Purple)
                     .WithTitle("The military staged a coup!")
                     .WithDescription("You were captured.")
                     .WithImageUrl("https://i.imgur.com/0Ugz4ds.png")
@@ -442,9 +441,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                 }
 
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(murdered ? Color.DarkRed : Color.Orange)
                     .WithTitle("You see a crowds forming outside your window!")
                     .WithDescription(storyLine.ToString())
-                    .WithImageUrl(murdered ? "https://i.imgur.com/YfT1nJC.png" : "https://i.imgur.com/Mqu7IHl.png")
+                    .WithImageUrl(murdered ? "https://i.imgur.com/ZcHUd5T.png" : "https://i.imgur.com/Mqu7IHl.png")
                     .Build()).Wait();
 
                 if (murdered)
@@ -454,8 +454,10 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
             else
             {
+                // Not murdered
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
-                    .WithTitle("You see a crowds forming outside your window!")
+                    .WithColor(Color.Orange)
+                    .WithTitle("You see crowds forming outside your window!")
                     .WithDescription("The crowds are forming. People are shouting at the top of their lungs. " +
                     "Your nation is not happy with how you've been treating them. You decide to open the window and all you hear is people " +
                     "chanting for a constitution. You have no option, but to give in to their demands. You signed their constitution.")
@@ -463,6 +465,67 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 return false;
+            }
+        }
+
+        private static bool AssassinationAttempted(Game game)
+        {
+            Random rng = new Random();
+            const short CHARISMA_WAY_OUT_THRESHOLD = 20;
+            const short FIGHT_IT_OUT_THRESHOLD = 40;
+
+            if (game.PersonalStats.Charisma > 80 && rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+            {
+                // Charisma backdoor
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkBlue)
+                    .WithTitle("Not the sharpest tool in the shed...")
+                    .WithDescription("You've been making quite a lot of enemies in the wealthy circles. Unlike folks, nobles " +
+                    "will not be as obvious about their moves... You were hanging out at a tavern with some folks, when you noticed " +
+                    "a suspicious figure outside. You leave through the back door and set up an ambush with your guards. " +
+                    "You are immediately followed by the suspicious person and soon enough they are surrounded by your guards " +
+                    "and folks. You convince them to give away their boss and then jail them. The noble who hired the assassin left " +
+                    "the country and nobles will not be attempting anything against you for a while.")
+                    .WithImageUrl("https://imgur.com/SQPfclQ.png")
+                    .Build()).Wait();
+
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.IncValues(incHappiness: SMALL_CHANGE);
+            }
+            else if (rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
+            {
+                // Fought it out
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkBlue)
+                    .WithTitle("Royal mistake...")
+                    .WithDescription("You've been making quite a lot of enemies in the wealthy circles. Unlike folks, nobles " +
+                    "will not be as obvious about their moves... You were hanging out at a tavern with some folks, when you noticed " +
+                    "a suspicious figure outside. You invite them inside, but they seem to ignore you. You slowly walk towards them... They " +
+                    "suddenly attempt stabbing you with a dagger, but you manage to disarm them. You both get your swords out. The fight goes on " +
+                    "for a while until you manage to tackle the assassin, throwing them behind the bar of the tavern and force them to surrender " +
+                    "pointing your sword at their neck. The assassin was decapitated the next day. The medical staff took care of your wounds " +
+                    "when you got back. No noble will attempt this again anytime soon.")
+                    .WithImageUrl("https://imgur.com/0Ugz4ds.png")
+                    .Build()).Wait();
+
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.IncValues(incHappiness: -MEDIUM_CHANGE);
+                return false;
+            }
+            else
+            {
+                // Assassinated
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkPurple)
+                    .WithTitle("Backstabbed...")
+                    .WithDescription("You've been making quite a lot of enemies in the wealthy circles. Unlike folks, nobles " +
+                    "will not be as obvious about their moves... And that's exactly what you felt at your back as you were leaving a tavern. " +
+                    "An assassin immediately backstabbed you as you got out and ran away before anyone could stop them. No one managed to save you.")
+                    .WithImageUrl("https://i.imgur.com/YfT1nJC.png")
+                    .Build()).Wait();
+
+                EndGame(game);
+                return true;
             }
         }
     }

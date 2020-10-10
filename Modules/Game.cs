@@ -108,6 +108,14 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Nobles = (short)Math.Abs(40 - Nobles);
                 Military = (short)Math.Abs(40 - Military);
             }
+
+            public void IncValues(short incFolks = 0, short incNobles = 0, short incMilitary = 0, short incWealth = 0)
+            {
+                Folks += incFolks;
+                Nobles += incNobles;
+                Military += incMilitary;
+                Wealth += incWealth;
+            }
         }
         public class PersonalStatsClass
         {
@@ -133,6 +141,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                 personalStats.Happiness += incPersonalStats.Happiness;
                 personalStats.Charisma += incPersonalStats.Charisma;
                 return personalStats;
+            }
+
+            public void IncValues(short incHappiness = 0, short incCharisma = 0)
+            {
+                Happiness += incHappiness;
+                Charisma += incCharisma;
             }
         }
     }
