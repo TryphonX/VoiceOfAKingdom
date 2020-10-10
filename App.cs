@@ -4,13 +4,14 @@ using System.Threading.Tasks;
 using Discord;
 using System.Text;
 using VoiceOfAKingdomDiscord.Modules;
+using System.Diagnostics;
 
 namespace VoiceOfAKingdomDiscord
 {
     class App
     {
         public static DiscordSocketClient Client { get; private set; }
-        public static GameManager GameMgr { get; private set; } = new GameManager();
+        public static GameManager GameMgr { get; } = new GameManager();
 
         static void Main(string[] args)
         {
@@ -18,18 +19,36 @@ namespace VoiceOfAKingdomDiscord
             Config.ReloadConfig();
             SendStartingMessage();
 
-            Console.CancelKeyPress += Console_CancelKeyPress;
+            Console.CancelKeyPress += OnCancelKeyPress;
 
             if (!string.IsNullOrEmpty(Config.Token))
                 new App().MainAsync().GetAwaiter().GetResult();
         }
 
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        private static void OnCancelKeyPress(object sender, ConsoleCancelEventArgs e)
         {
-            foreach (var game in GameMgr.Games)
+            CommonScript.Log("Searching for running games");
+
+            int count = 0;
+            if (GameMgr.Games.Count > 0)
             {
-                GameManager.SendEndGameMsg(game);
+                foreach (var game in GameMgr.Games)
+                {
+                    // TODO: Save before ending
+                    count = GameManager.EndGame(game) ? ++count : count;
+                }
             }
+
+            if (count > 0)
+                CommonScript.Log($"{count} games ended");
+
+            CommonScript.Log("Exiting");
+
+            // Thanks you, Visual Studio,
+            // Really cool.
+            // (Had to add this due to a VS Debugger bug)
+            if (Debugger.IsAttached)
+                Environment.Exit(1);
         }
 
         public async Task MainAsync()

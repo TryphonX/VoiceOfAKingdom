@@ -12,8 +12,6 @@ namespace VoiceOfAKingdomDiscord.Modules
     {
         public const string CHECKMARK = "✅";
         public const string NO_ENTRY = "⛔";
-        // 1 min
-        public const int TIMEOUT_TIME = 120000;
 
         public static string Version { get; } = "0.1.0";
         public static string Author { get; } = "Tryphon Ksydas";
@@ -23,9 +21,8 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static void Log(string msg)
         {
-            StackFrame stackFrame = new StackTrace(1, true).GetFrame(0);
-
-            Console.WriteLine($"{msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
+            Console.ResetColor();
+            PrintLine($"App\t     {msg}");
         }
 
         public static void LogWarn(string msg)
@@ -33,7 +30,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             StackFrame stackFrame = new StackTrace(1, true).GetFrame(0);
 
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"{msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
+            PrintLine($"*WARN\t     {msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
             Console.ResetColor();
         }
 
@@ -42,7 +39,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             StackFrame errorFrame = new StackTrace(1, true).GetFrame(0);
 
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"**ERR {msg} @ {GetClassName(errorFrame.GetFileName())}.{errorFrame.GetMethod().Name}");
+            PrintLine($"**ERR\t     {msg} @ {GetClassName(errorFrame.GetFileName())}.{errorFrame.GetMethod().Name}");
             Console.ResetColor();
         }
 
@@ -61,10 +58,13 @@ namespace VoiceOfAKingdomDiscord.Modules
                 stackFrame = new StackTrace(1, true).GetFrame(0);
             }
 
-            Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine($"{DateTime.Now.ToLongTimeString()} Debug: {msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            PrintLine($"Debug\t     {msg} @ {GetClassName(stackFrame.GetFileName())}.{stackFrame.GetMethod().Name}");
             Console.ResetColor();
         }
+
+        private static void PrintLine(string msg) =>
+            Console.WriteLine($"{DateTime.Now.ToLocalTime().ToLongTimeString()} {msg}");
 
         private static string GetClassName(string fileName) =>
             fileName.Split('\\').Last().TrimEnd('s', 'c', '.');

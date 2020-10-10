@@ -21,7 +21,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static Task OnDisconnected(Exception e)
         {
-            CommonScript.LogWarn($"Disconnected. Exception: {e.Message}");
+            CommonScript.LogError($"Disconnected. Exception: {e.Message}");
             return Task.CompletedTask;
         }
 
@@ -54,7 +54,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static Task OnReactionAdded(Cacheable<IUserMessage, ulong> unCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (App.GameMgr.Games.Count == 0)
+            if (App.GameMgr.Games.Count == 0 || reaction.UserId == App.Client.CurrentUser.Id)
                 return Task.CompletedTask;
 
             if (!App.GameMgr.Games.Any(game => game.PlayerID == reaction.UserId))
@@ -128,6 +128,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                         CommonScript.LogWarn("Someone other than the bot sent a message. Wrong permissions.");
                     }
                 });
+
             GameManager.ResolveRequest(game, accepted);
         }
 

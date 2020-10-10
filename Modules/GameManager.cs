@@ -96,10 +96,17 @@ namespace VoiceOfAKingdomDiscord.Modules
         private static void SetDead(Game game) =>
             App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).IsDead = true;
 
-        public static void EndGame(Game game)
+        /// <summary>
+        /// Returns if the game ended successfully.
+        /// </summary>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        public static bool EndGame(Game game)
         {
+            bool success = false;
             try
             {
+                success = true;
                 GetGameGuildChannel(game).DeleteAsync();
                 App.GameMgr.Games.Remove(game);
             }
@@ -107,6 +114,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 CommonScript.LogError(e.Message);
             }
+
+            return success;
         }
 
         /// <summary>
