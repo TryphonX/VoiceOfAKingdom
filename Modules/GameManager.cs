@@ -71,11 +71,13 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                     if (yearsInCommand == 1)
                     {
-                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for 1 year and {game.MonthsInControl%12} months").Wait();
+                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for 1 year " +
+                            $"and {game.MonthsInControl%12} months").Wait();
                     }
                     else
                     {
-                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for {yearsInCommand} years and {game.MonthsInControl%12} months").Wait();
+                        GetGameMessageChannel(game).SendMessageAsync($"Game over. You ruled for {yearsInCommand} years " +
+                            $"and {game.MonthsInControl%12} months").Wait();
                     }
 
                     Thread.Sleep(CommonScript.TIMEOUT_TIME);
