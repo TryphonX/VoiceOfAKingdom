@@ -61,7 +61,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        public static void SendEndGameMsg(Game game, bool skipMessage = false)
+        public static void SendEndGameMsg(Game game)
         {
             try
             {
