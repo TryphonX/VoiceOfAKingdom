@@ -41,38 +41,24 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        #region Fake-Enums for INI
+        #region Fake Enums
         /// <summary>
         /// Very enum-like
         /// Used as an Enum for the Ini file sections
         /// </summary>
         private class ConfigSection
         {
-            #region Setup
-            private ConfigSection(string value) =>
-                this.value = value;
-
-            private readonly string value;
-            #endregion
-
-            public static string App { get { return new ConfigSection("App").value; } }
-            public static string Preferences { get { return new ConfigSection("Preferences").value; } }
+            public static string App => "App";
+            public static string Preferences => "Preferences";
         }
 
         private class ConfigKey
         {
-            #region Setup
-            private ConfigKey(string value) =>
-                this.value = value;
-
-            private readonly string value;
-            #endregion
-
-            public static string Token { get { return new ConfigKey("Token").value; } }
-            public static string OwnerID { get { return new ConfigKey("OwnerID").value; } }
-            public static string IsDebug { get { return new ConfigKey("IsDebug").value; } }
-            public static string Prefix { get { return new ConfigKey("Prefix").value; } }
-            public static string GamesCategoryID { get { return new ConfigKey("GamesCategoryID").value; } }
+            public static string Token => "Token";
+            public static string OwnerID => "OwnerID";
+            public static string IsDebug => "IsDebug";
+            public static string Prefix => "Prefix";
+            public static string GamesCategoryID => "GamesCategoryID";
         }
 
         #endregion
