@@ -24,5 +24,28 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static Person General { get; } = new Person("General Liam Balliol", Image.WarriorRaisedFist, Color.DarkOrange, "🛡");
         public static Person Folk { get; } = new Person("Astarte Mercia", Image.WomanWithRose, Color.Blue, "✊");
         public static Person Noble { get; } = new Person("William Patrick", Image.ComicManGoldenArmor, Color.DarkPurple, "👑");
+
+        public static Person Parse(string type)
+        {
+            Person person;
+
+            switch (type)
+            {
+                case "military":
+                    person = General;
+                    break;
+                case "folk":
+                    person = Folk;
+                    break;
+                case "noble":
+                    person = Noble;
+                    break;
+                default:
+                    person = General;
+                    break;
+            }
+
+            return person;
+        }
     }
 }

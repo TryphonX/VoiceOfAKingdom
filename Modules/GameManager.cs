@@ -11,11 +11,13 @@ using System.Reflection.Metadata.Ecma335;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Xml;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
     class GameManager
     {
+        private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
@@ -30,16 +32,113 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const int PROGRESS_BAR_BOXES = 10;
         public static bool HasGame(List<Game> games, ulong userID) =>
             games.Any(game => game.PlayerID == userID);
-        public List<Request> Requests { get; } = new List<Request>()
+        public List<Request> Requests { get; } = new List<Request>();
+
+        public GameManager()
         {
-            new Request("Some question?", Person.General,
-                new Game.KingdomStatsClass(folks: -MEDIUM_CHANGE, military: BIG_CHANGE, wealth: -SMALL_CHANGE),
-                new Game.PersonalStatsClass(happiness: -MEDIUM_CHANGE, charisma: SMALL_CHANGE),
-                new Game.KingdomStatsClass(folks: MEDIUM_CHANGE, military: -BIG_CHANGE, wealth: SMALL_CHANGE),
-                new Game.PersonalStatsClass(happiness: MEDIUM_CHANGE, charisma: -SMALL_CHANGE),
-                "Thank you or something.",
-                "You will regret this or something.")
-        };
+            try
+            {
+                CommonScript.Log("Loading requests");
+                XmlDocument doc = new XmlDocument();
+                doc.Load(DEFAULT_REQUESTS_PATH);
+
+                #region Request XML Syntax
+                /* <Request>
+                 *  <question>Question?</question>
+                 *  <type>military/noble/folk</type>
+                 *  <accept folk=int noble=int mil=int wealth=int hap=int char=int>Response.</accept>
+                 *  <reject folk=int noble=int mil=int wealth=int hap=int char=int>Response.</reject>
+                 * </Request>
+                 */
+                #endregion
+
+                #region Init vars
+                string question;
+                string type;
+                short folk;
+                short noble;
+                short mil;
+                short wealth;
+                short hap;
+                short charisma;
+                string responseOnAccepted;
+                string responseOnRejected;
+                #endregion
+
+                foreach (XmlNode requestNode in doc.DocumentElement)
+                {
+                    if (!requestNode.Name.Equals(XmlNodeEnum.Request))
+                        continue;
+
+                    question = requestNode[XmlNodeEnum.Question].InnerText;
+                    type = requestNode[XmlNodeEnum.Type].InnerText;
+
+                    #region Accept
+                    folk = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Folk]);
+                    noble = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Noble]);
+                    mil = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Military]);
+                    wealth = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Wealth]);
+                    hap = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Happiness]);
+                    charisma = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Charisma]);
+
+                    Game.KingdomStatsClass kingdomStatsOnAccept = new Game.KingdomStatsClass(folk, noble, mil, wealth);
+                    Game.PersonalStatsClass personalStatsOnAccept = new Game.PersonalStatsClass(hap, charisma);
+
+                    responseOnAccepted = requestNode[XmlNodeEnum.Accept].InnerText;
+                    #endregion
+
+                    #region Reject
+                    folk = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Folk]);
+                    noble = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Noble]);
+                    mil = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Military]);
+                    wealth = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Wealth]);
+                    hap = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Happiness]);
+                    charisma = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Charisma]);
+
+                    Game.KingdomStatsClass kingdomStatsOnReject = new Game.KingdomStatsClass(folk, noble, mil, wealth);
+                    Game.PersonalStatsClass personalStatsOnReject = new Game.PersonalStatsClass(hap, charisma);
+                    
+                    responseOnRejected = requestNode[XmlNodeEnum.Reject].InnerText;
+                    #endregion
+
+                    Requests.Add(new Request(question, Person.Parse(type),
+                        kingdomStatsOnAccept, personalStatsOnAccept,
+                        kingdomStatsOnReject, personalStatsOnReject,
+                        responseOnAccepted, responseOnRejected));
+                }
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                throw;
+            }
+
+            CommonScript.Log("Finished loading requests");
+        }
+
+        #region Fake Enums
+        private class XmlNodeEnum
+        {
+            public static string Request => "Request";
+            public static string Question => "question";
+            public static string Type => "type";
+            public static string Accept => "accept";
+            public static string Reject => "reject";
+        }
+
+        private class XmlAttributeEnum
+        {
+            public static string Folk => "folk";
+            public static string Noble => "noble";
+            public static string Military => "mil";
+            public static string Wealth => "wealth";
+            public static string Happiness => "hap";
+            public static string Charisma => "char";
+        }
+        #endregion
+
+        private static short ParseValue(XmlAttribute attribute) =>
+            attribute != null ? short.Parse(attribute.Value) : (short)0;
 
         public static bool TryGetGame(ulong userID, out Game game)
         {

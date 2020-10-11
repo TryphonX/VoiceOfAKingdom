@@ -11,13 +11,15 @@ namespace VoiceOfAKingdomDiscord
     class App
     {
         public static DiscordSocketClient Client { get; private set; }
-        public static GameManager GameMgr { get; } = new GameManager();
+        public static GameManager GameMgr { get; private set; }
 
         static void Main(string[] args)
         {
             Console.Title = $"{CommonScript.Title} v{CommonScript.Version}";
             Config.ReloadConfig();
             SendStartingMessage();
+
+            GameMgr = new GameManager();
 
             Console.CancelKeyPress += OnCancelKeyPress;
 
