@@ -14,7 +14,6 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static ulong OwnerID { get; private set; }
         public static bool IsDebug { get; private set; }
         public static string Prefix { get; private set; }
-        public static ulong GamesCategoryID { get; private set; }
 
         private const string CONFIG_PATH = "./config.ini";
 
@@ -33,7 +32,6 @@ namespace VoiceOfAKingdomDiscord.Modules
                 OwnerID = ulong.Parse(ReadConfig(ConfigSection.App, ConfigKey.OwnerID));
                 IsDebug = ReadConfig(ConfigSection.App, ConfigKey.IsDebug).Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase);
                 Prefix = ReadConfig(ConfigSection.Preferences, ConfigKey.Prefix);
-                GamesCategoryID = ulong.Parse(ReadConfig(ConfigSection.Preferences, ConfigKey.GamesCategoryID));
             }
             catch (Exception e)
             {

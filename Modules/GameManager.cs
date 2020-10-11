@@ -227,7 +227,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static SocketGuildChannel GetGameGuildChannel(Game game)
         {
-            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
+            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(game.CategoryID).Channels)
             {
                 if (channel.Id != game.ChannelID)
                     continue;
@@ -246,7 +246,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static ISocketMessageChannel GetGameMessageChannel(Game game)
         {
-            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(Config.GamesCategoryID).Channels)
+            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(game.CategoryID).Channels)
             {
                 if (channel.Id != game.ChannelID)
                     continue;

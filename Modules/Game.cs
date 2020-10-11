@@ -14,6 +14,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public ulong PlayerID { get; set; }
         public ulong ChannelID { get; set; }
         public ulong GuildID { get; set; }
+        public ulong CategoryID { get; }
         public DateTime Date { get; set; } = CommonScript.GetRandomDate();
         public int MonthsInControl { get; set; } = 0;
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
@@ -21,40 +22,73 @@ namespace VoiceOfAKingdomDiscord.Modules
         public Request CurrentRequest { get; set; }
         public bool IsDead { get; set; } = false;
 
-        public Game(ulong userID, CommandHandler commandHandler)
+        public Game(ulong userID, CommandHandler cmdHandler)
         {
-            PlayerID = userID;
-
-            GuildID = 0;
-            foreach (var guild in App.Client.Guilds)
+            try
             {
-                if (guild.Channels.Any(channel => channel.Id == commandHandler.Msg.Channel.Id))
+                PlayerID = userID;
+
+                SocketGuild cachedGuild = null;
+
+                GuildID = 0;
+                CategoryID = 0;
+                foreach (var guild in App.Client.Guilds)
                 {
-                    GuildID = guild.Id;
-                }
-            }
-
-            App.Client.GetGuild(GuildID).CreateTextChannelAsync($"{commandHandler.Msg.Author.Username} Game", channel =>
-            {
-                channel.CategoryId = Config.GamesCategoryID;
-            }).ContinueWith(antecedent =>
-            {
-                ChannelID = antecedent.Result.Id;
-
-                // Give the player the permission to send messages
-                antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
-                    new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
-
-                CurrentRequest = GameManager.GetRandomRequest();
-                antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this, true))
-                    .ContinueWith(antecedent =>
+                    if (guild.Channels.Any(channel => channel.Id == cmdHandler.Msg.Channel.Id))
                     {
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
-                    });
+                        GuildID = guild.Id;
+                        cachedGuild = guild;
 
-                commandHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
-            });
+                        // Last Voice of a Kingdom category
+                        SocketCategoryChannel category = guild.CategoryChannels
+                            .Last(category => category.Name.Contains("Voice of a Kingdom", StringComparison.OrdinalIgnoreCase));
+
+                        if (category == null)
+                        {
+                            cmdHandler.Msg.Channel.SendMessageAsync("There is no \"Voice of a Kingdom\" category in the server.");
+                            throw new Exception("Missing category");
+                        }
+
+                        CategoryID = category.Id;
+                    }
+                }
+
+                if (cachedGuild == null)
+                    throw new Exception();
+
+                if (CategoryID == 0)
+                {
+                    cmdHandler.Msg.Channel.SendMessageAsync("There is no \"Voice of a Kingdom\" category in the server.");
+                    throw new Exception("Missing category");
+                }
+
+                cachedGuild.CreateTextChannelAsync($"{cmdHandler.Msg.Author.Username} Game", channel =>
+                {
+                    channel.CategoryId = CategoryID;
+                }).ContinueWith(antecedent =>
+                {
+                    ChannelID = antecedent.Result.Id;
+
+                    // Give the player the permission to send messages
+                    antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
+                        new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
+
+                    CurrentRequest = GameManager.GetRandomRequest();
+                    antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this, true))
+                        .ContinueWith(antecedent =>
+                        {
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
+                        });
+
+                    cmdHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
+                });
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                throw;
+            }
         }
 
         public class KingdomStatsClass
