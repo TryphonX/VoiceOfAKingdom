@@ -72,7 +72,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     if (channel.Id != game.ChannelID)
                         break;
 
-                    if (reaction.Emote.Name.Equals(CommonScript.CHECKMARK))
+                    if (reaction.Emote.Name.Equals(CommonScript.UnicodeAccept))
                     {
                         // Proceed to next month calculations
                         // Or end the game
@@ -83,10 +83,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                         else
                         {
                             GameManager.EndGame(game);
-                            break;
                         }
+                        break;
                     }
-                    else if (reaction.Emote.Name.Equals(CommonScript.NO_ENTRY))
+                    else if (reaction.Emote.Name.Equals(CommonScript.UnicodeReject))
                     {
                         // Proceed to next month calculations
                         if (!game.IsDead)
@@ -97,8 +97,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                         {
                             CommonScript.LogWarn("Invalid reaction for a finished game. Possibly wrong permissions.");
                             GameManager.EndGame(game);
-                            break;
                         }
+                        break;
                     }
                     else
                     {

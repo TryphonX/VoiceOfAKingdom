@@ -10,14 +10,17 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     static class CommonScript
     {
-        public const string CHECKMARK = "✅";
-        public const string NO_ENTRY = "⛔";
-
+        public static string UnicodeAccept { get; } = "✅";
+        public static string UnicodeReject { get; } = "⛔";
         public static string Version { get; } = "0.1.0";
         public static string Author { get; } = "Tryphon Ksydas";
         public static string[] Collaborators { get; } = { "ZarOS69" };
         public static string Title { get; } = "Voice of a Kingdom";
         public static int[] MonthsWith31Days { get; } = { 1, 3, 5, 7, 8, 10, 12 };
+        public static EmbedFieldBuilder EmptyEmbedField =>
+            new EmbedFieldBuilder()
+                .WithName("\u200B")
+                .WithValue("\u200B");
 
         public static void Log(string msg)
         {
@@ -80,13 +83,6 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             int rem = num % roundTo;
             return rem >= roundTo/2 ? (num - rem + roundTo) : (num - rem);
-        }
-
-        public static EmbedFieldBuilder EmptyEmbedField()
-        {
-            return new EmbedFieldBuilder()
-                .WithName("\u200B")
-                .WithValue("\u200B");
         }
 
         public static short Check0To100Range(short stat)

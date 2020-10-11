@@ -16,7 +16,7 @@ namespace VoiceOfAKingdomDiscord
         static void Main(string[] args)
         {
             Console.Title = $"{CommonScript.Title} v{CommonScript.Version}";
-            Config.ReloadConfig();
+            Config.Reload();
             SendStartingMessage();
 
             GameMgr = new GameManager();

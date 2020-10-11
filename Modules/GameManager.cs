@@ -30,8 +30,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
-        public static bool HasGame(List<Game> games, ulong userID) =>
-            games.Any(game => game.PlayerID == userID);
         public List<Request> Requests { get; } = new List<Request>();
 
         public GameManager()
@@ -143,7 +141,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static bool TryGetGame(ulong userID, out Game game)
         {
             game = null;
-            if (HasGame(App.GameMgr.Games, userID))
+            if (HasGame(userID))
             {
                 foreach (var gameMgrGame in App.GameMgr.Games)
                 {
@@ -165,7 +163,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             try
             {
-                SetDead(game);
+                SetDead(game.PlayerID);
 
                 int yearsInCommand = game.MonthsInControl / 12;
                 int monthsInCommand = (game.MonthsInControl - 1) % 12;
@@ -184,7 +182,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build())
                     .ContinueWith(antecedent =>
                     {
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK));
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept));
                     });
             }
             catch (Exception e)
@@ -193,8 +191,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        private static void SetDead(Game game) =>
-            App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).IsDead = true;
+        private static void SetDead(ulong playerID) =>
+            App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == playerID).IsDead = true;
 
         /// <summary>
         /// Returns if the game ended successfully.
@@ -225,18 +223,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private static SocketGuildChannel GetGameGuildChannel(Game game)
-        {
-            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(game.CategoryID).Channels)
-            {
-                if (channel.Id != game.ChannelID)
-                    continue;
-
-                return channel;
-            }
-
-            return null;
-        }
+        private static SocketGuildChannel GetGameGuildChannel(Game game) =>
+            (SocketGuildChannel)App.Client.GetChannel(game.ChannelID);
 
         /// <summary>
         /// Returns the game's MESSAGE channel.
@@ -244,18 +232,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private static ISocketMessageChannel GetGameMessageChannel(Game game)
-        {
-            foreach (var channel in App.Client.GetGuild(game.GuildID).GetCategoryChannel(game.CategoryID).Channels)
-            {
-                if (channel.Id != game.ChannelID)
-                    continue;
-
-                return (ISocketMessageChannel)channel;
-            }
-
-            return null;
-        }
+        private static ISocketMessageChannel GetGameMessageChannel(Game game) =>
+            (ISocketMessageChannel)App.Client.GetChannel(game.ChannelID);
 
         /// <summary>
         /// Creates the new month embed. Format: https://i.imgur.com/ZEUIPeR.png
@@ -263,10 +241,12 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <param name="game"></param>
         /// <param name="request"></param>
         /// <returns>The new month embed.</returns>
-        public static Embed GetNewMonthEmbed(Game game, bool isFirstMonth,
+        public static Embed GetNewMonthEmbed(Game game,
             Game.KingdomStatsClass kingdomStatsChanges = null,
             Game.PersonalStatsClass personalStatsChanges = null)
         {
+            bool isFirstMonth = game.MonthsInControl == 0;
+
             // Check for mistakes
             if (!isFirstMonth &&
                 (kingdomStatsChanges == null ||
@@ -284,7 +264,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithColor(game.CurrentRequest.Person.Color)
                 .WithDescription(game.CurrentRequest.Question)
                 .WithTimestamp(game.Date)
-                .AddField(CommonScript.EmptyEmbedField());
+                .AddField(CommonScript.EmptyEmbedField);
 
             StringBuilder sb = new StringBuilder();
             #region On Accept
@@ -313,7 +293,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             #endregion
             sb.Clear();
 
-            embed.AddField(CommonScript.EmptyEmbedField());
+            embed.AddField(CommonScript.EmptyEmbedField);
 
             #region Folks 
             embed.AddField(new EmbedFieldBuilder()
@@ -331,7 +311,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Nobles)));
             #endregion
 
-            embed.AddField(CommonScript.EmptyEmbedField());
+            embed.AddField(CommonScript.EmptyEmbedField);
 
             #region Military
             embed.AddField(new EmbedFieldBuilder()
@@ -349,7 +329,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Wealth)));
             #endregion
 
-            embed.AddField(CommonScript.EmptyEmbedField());
+            embed.AddField(CommonScript.EmptyEmbedField);
 
             embed.AddField(new EmbedFieldBuilder()
                 .WithName("🤔 Personal Info")
@@ -459,7 +439,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             return new CustomEmbed()
                 .WithColor(game.CurrentRequest.Person.Color)
                 .WithThumbnailUrl(game.CurrentRequest.Person.ImgUrl)
-                .WithTitle(accepted ? $"{CommonScript.CHECKMARK} Accepted" : $"{CommonScript.NO_ENTRY} Rejected")
+                .WithTitle(accepted ? $"{CommonScript.UnicodeAccept} Accepted" : $"{CommonScript.UnicodeReject} Rejected")
                 .WithDescription(accepted ? game.CurrentRequest.ResponseOnAccepted : game.CurrentRequest.ResponseOnRejected)
                 .WithTimestamp(game.Date)
                 .Build();
@@ -473,20 +453,23 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             game.Date = AddMonthToDate(game.Date);
 
-            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game, false, cachedKingdomChanges, cachedPersonalChanges))
+            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
                 .ContinueWith(antecedent =>
                 {
                     // Block answers if you don't have the money for them
                     if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnAccept.Wealth)
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
                     
                     if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnReject.Wealth)
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject)).Wait();
                 });
         }
 
         public static Request GetRandomRequest() =>
             App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)];
+
+        public static bool HasGame(ulong userID) =>
+            App.GameMgr.Games.Any(game => game.PlayerID == userID);
 
         private static DateTime AddMonthToDate(DateTime date)
         {

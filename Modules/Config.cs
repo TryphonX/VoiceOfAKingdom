@@ -8,7 +8,7 @@ using System.Text;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
-    class Config
+    static class Config
     {
         public static string Token { get; private set; }
         public static ulong OwnerID { get; private set; }
@@ -24,7 +24,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
 
 
-        public static void ReloadConfig()
+        public static void Reload()
         {
             try
             {
@@ -56,7 +56,6 @@ namespace VoiceOfAKingdomDiscord.Modules
             public static string OwnerID => "OwnerID";
             public static string IsDebug => "IsDebug";
             public static string Prefix => "Prefix";
-            public static string GamesCategoryID => "GamesCategoryID";
         }
 
         #endregion

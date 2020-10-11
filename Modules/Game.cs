@@ -6,15 +6,14 @@ using Discord.WebSocket;
 using Discord;
 using System.Threading.Tasks;
 using Discord.Rest;
+using System.ComponentModel.DataAnnotations;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
     class Game
     {
-        public ulong PlayerID { get; set; }
-        public ulong ChannelID { get; set; }
-        public ulong GuildID { get; set; }
-        public ulong CategoryID { get; }
+        public ulong PlayerID { get; }
+        public ulong ChannelID { get; private set; }
         public DateTime Date { get; set; } = CommonScript.GetRandomDate();
         public int MonthsInControl { get; set; } = 0;
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
@@ -29,14 +28,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                 PlayerID = userID;
 
                 SocketGuild cachedGuild = null;
+                ulong categoryID = 0;
 
-                GuildID = 0;
-                CategoryID = 0;
                 foreach (var guild in App.Client.Guilds)
                 {
                     if (guild.Channels.Any(channel => channel.Id == cmdHandler.Msg.Channel.Id))
                     {
-                        GuildID = guild.Id;
                         cachedGuild = guild;
 
                         // Last Voice of a Kingdom category
@@ -49,36 +46,30 @@ namespace VoiceOfAKingdomDiscord.Modules
                             throw new Exception("Missing category");
                         }
 
-                        CategoryID = category.Id;
+                        categoryID = category.Id;
                     }
                 }
 
                 if (cachedGuild == null)
                     throw new Exception();
 
-                if (CategoryID == 0)
-                {
-                    cmdHandler.Msg.Channel.SendMessageAsync("There is no \"Voice of a Kingdom\" category in the server.");
-                    throw new Exception("Missing category");
-                }
-
                 cachedGuild.CreateTextChannelAsync($"{cmdHandler.Msg.Author.Username} Game", channel =>
                 {
-                    channel.CategoryId = CategoryID;
+                    channel.CategoryId = categoryID;
                 }).ContinueWith(antecedent =>
                 {
                     ChannelID = antecedent.Result.Id;
 
                     // Give the player the permission to send messages
-                    antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(GuildID).GetUser(PlayerID),
-                        new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow));
+                    antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(cachedGuild.Id).GetUser(PlayerID),
+                        new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow, viewChannel: PermValue.Allow));
 
                     CurrentRequest = GameManager.GetRandomRequest();
-                    antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this, true))
+                    antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
                         .ContinueWith(antecedent =>
                         {
-                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.CHECKMARK)).Wait();
-                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.NO_ENTRY)).Wait();
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject)).Wait();
                         });
 
                     cmdHandler.Msg.Channel.SendMessageAsync($"New game started \\➡️ <#{antecedent.Result.Id}>");
@@ -93,9 +84,13 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public class KingdomStatsClass
         {
+            [Range(0, 100)]
             public short Folks { get; set; }
+            [Range(0, 100)]
             public short Military { get; set; }
+            [Range(0, 100)]
             public short Nobles { get; set; }
+            [Range(0, 100)]
             public short Wealth { get; set; }
 
             public KingdomStatsClass()
@@ -153,7 +148,9 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
         public class PersonalStatsClass
         {
+            [Range(0, 100)]
             public short Happiness { get; set; }
+            [Range(0, 100)]
             public short Charisma { get; set; }
 
             public PersonalStatsClass()
