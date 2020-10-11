@@ -37,7 +37,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 // Iterate through the commands to find if the
                 // first arg is an actual command name
                 Command command = null;
-                foreach (Command cmd in cmdHandler.Commands)
+                foreach (Command cmd in CommandHandler.Commands)
                 {
                     // If any of the abbreviations is mentioned save the command
                     if (cmd.Abbreviations.Any(abbrev => abbrev.Equals(SpecificCommand, StringComparison.OrdinalIgnoreCase)))
@@ -49,7 +49,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 // If there was no command mentioned, show the help for all commands
                 if (command == null)
                 {
-                    embed = PrepareHelpEmbedAll(cmdHandler);
+                    embed = PrepareHelpEmbedAll();
                 }
                 // If there is a command, show the help for the command used
                 else
@@ -59,7 +59,7 @@ namespace VoiceOfAKingdomDiscord.Commands
             }
             else
             {
-                embed = PrepareHelpEmbedAll(cmdHandler);
+                embed = PrepareHelpEmbedAll();
             }
 
             cmdHandler.Msg.Channel.SendMessageAsync(embed: embed);
@@ -70,12 +70,12 @@ namespace VoiceOfAKingdomDiscord.Commands
         /// </summary>
         /// <param name="commandHandler"></param>
         /// <returns>The embed it created; ready to send</returns>
-        private Embed PrepareHelpEmbedAll(CommandHandler commandHandler)
+        private Embed PrepareHelpEmbedAll()
         {
             EmbedBuilder embed = new CustomEmbed();
 
             StringBuilder valueBuilder;
-            foreach (Command command in commandHandler.Commands)
+            foreach (Command command in CommandHandler.Commands)
             {
                 #region Field Format
                 /* 

@@ -13,7 +13,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         private string commandName;
         public List<string> Args { get; private set; }
         public SocketMessage Msg { get; private set; }
-        public List<Command> Commands { get; set; }
+        public static List<Command> Commands { get; } = new List<Command>()
+            {
+                new PingCommand(),
+                new HelpCommand(),
+                new StartCommand(),
+                new EndCommand()
+            };
 
         public void Run(SocketMessage msg)
         {
@@ -34,8 +40,6 @@ namespace VoiceOfAKingdomDiscord.Modules
                 Args.Add(msgWords[i]);
             }
 
-            // Look for the command
-            InitCommands();
             foreach (Command cmd in Commands)
             {
                 if (cmd.Abbreviations.Any(abbrev => abbrev.Equals(commandName, StringComparison.OrdinalIgnoreCase)))
@@ -51,17 +55,6 @@ namespace VoiceOfAKingdomDiscord.Modules
                     break;
                 }
             }
-        }
-
-        private void InitCommands()
-        {
-            Commands = new List<Command>
-            {
-                new PingCommand(),
-                new HelpCommand(),
-                new StartCommand(),
-                new EndCommand()
-            };
         }
 
         private bool GetUserHasPermission(SocketUser user, Command cmd)
