@@ -10,16 +10,16 @@ namespace VoiceOfAKingdomDiscord.Modules
         public Person Person { get; }
         public KingdomStatsClass KingdomStatsOnAccept { get; }
         public KingdomStatsClass KingdomStatsOnReject { get; }
-        public Game.PersonalStatsClass PersonalStatsOnAccept { get; }
-        public Game.PersonalStatsClass PersonalStatsOnReject { get; }
+        public PersonalStatsClass PersonalStatsOnAccept { get; }
+        public PersonalStatsClass PersonalStatsOnReject { get; }
         public string ResponseOnAccepted { get; }
         public string ResponseOnRejected { get; }
 
         public Request(string question, Person person,
             KingdomStatsClass kingdomStatsOnAccept,
-            Game.PersonalStatsClass personalStatsOnAccept,
+            PersonalStatsClass personalStatsOnAccept,
             KingdomStatsClass kingdomStatsOnReject,
-            Game.PersonalStatsClass personalStatsOnReject,
+            PersonalStatsClass personalStatsOnReject,
             string responseOnAccepted,
             string responseOnRejected)
         {

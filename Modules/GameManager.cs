@@ -80,7 +80,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     charisma = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Charisma]);
 
                     KingdomStatsClass kingdomStatsOnAccept = new KingdomStatsClass(folk, noble, mil, wealth);
-                    Game.PersonalStatsClass personalStatsOnAccept = new Game.PersonalStatsClass(hap, charisma);
+                    PersonalStatsClass personalStatsOnAccept = new PersonalStatsClass(hap, charisma);
 
                     responseOnAccepted = requestNode[XmlNodeEnum.Accept].InnerText;
                     #endregion
@@ -94,7 +94,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     charisma = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Charisma]);
 
                     KingdomStatsClass kingdomStatsOnReject = new KingdomStatsClass(folk, noble, mil, wealth);
-                    Game.PersonalStatsClass personalStatsOnReject = new Game.PersonalStatsClass(hap, charisma);
+                    PersonalStatsClass personalStatsOnReject = new PersonalStatsClass(hap, charisma);
                     
                     responseOnRejected = requestNode[XmlNodeEnum.Reject].InnerText;
                     #endregion
@@ -243,7 +243,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns>The new month embed.</returns>
         public static Embed GetNewMonthEmbed(Game game,
             KingdomStatsClass kingdomStatsChanges = null,
-            Game.PersonalStatsClass personalStatsChanges = null)
+            PersonalStatsClass personalStatsChanges = null)
         {
             bool isFirstMonth = game.MonthsInControl == 0;
 
@@ -421,7 +421,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             CommonScript.DebugLog("init");
             KingdomStatsClass incKingdomStats = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-            Game.PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+            PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
 
             game.KingdomStats += incKingdomStats;
             game.PersonalStats += incPersonalStats;
@@ -448,7 +448,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         private static void NextMonth(Game game, bool accepted)
         {
             KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-            Game.PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+            PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
             game.CurrentRequest = GetRandomRequest();
 
             game.Date = AddMonthToDate(game.Date);
