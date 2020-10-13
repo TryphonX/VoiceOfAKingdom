@@ -65,7 +65,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     antecedent.Result.AddPermissionOverwriteAsync(App.Client.GetGuild(cachedGuild.Id).GetUser(PlayerID),
                         new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow, viewChannel: PermValue.Allow));
 
-                    CurrentRequest = GameManager.GetRandomRequest(this.RequestSource);
+                    CurrentRequest = GameManager.GetRandomRequest(RequestSource);
                     antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
                         .ContinueWith(antecedent =>
                         {

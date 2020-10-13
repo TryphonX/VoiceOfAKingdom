@@ -29,16 +29,16 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const int PROGRESS_BAR_BOXES = 10;
 
         public static List<Game> Games { get; } = new List<Game>();
-        public static List<Request> DefaultRequests { get; private set; }
-        public static List<Request> CustomRequests { get; private set; }
+        public static List<Request> DefaultRequests { get; } = new List<Request>();
+        public static List<Request> CustomRequests { get; } = new List<Request>();
         public static bool HasCustomRequests { get; } = CustomRequests.Count != 0;
 
         public static void ReloadRequests()
         {
             try
             {
-                DefaultRequests = new List<Request>();
-                CustomRequests = new List<Request>();
+                DefaultRequests.Clear();
+                CustomRequests.Clear();
 
                 #region Request XML Syntax
                 /* <Request>
