@@ -18,7 +18,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 new PingCommand(),
                 new HelpCommand(),
                 new StartCommand(),
-                new EndCommand()
+                new EndCommand(),
+                new ReloadCommand()
             };
 
         public void Run(SocketMessage msg)

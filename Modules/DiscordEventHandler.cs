@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace VoiceOfAKingdomDiscord.Modules
@@ -54,11 +55,50 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static Task OnReactionAdded(Cacheable<IUserMessage, ulong> unCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (GameManager.Games.Count == 0 || reaction.UserId == App.Client.CurrentUser.Id)
+            if (reaction.UserId == App.Client.CurrentUser.Id)
+                return Task.CompletedTask;
+
+            if (reaction.UserId == Config.OwnerID)
+            {
+                try
+                {
+                    bool accepted = reaction.Emote.Name.Equals(CommonScript.UnicodeAccept);
+                    bool rejected = reaction.Emote.Name.Equals(CommonScript.UnicodeReject);
+
+                    if (accepted || rejected)
+                    {
+                        channel.GetMessageAsync(reaction.MessageId)
+                        .ContinueWith(antecedent =>
+                        {
+                            if (antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
+                            Regex.IsMatch(antecedent.Result.Content, @"^Are you sure you want to reload all custom requests\?"))
+                            {
+                                antecedent.Result.RemoveAllReactionsAsync();
+                                if (accepted)
+                                {
+                                    antecedent.Result.Channel.SendMessageAsync("Reloading custom requests.");
+                                    GameManager.ReloadRequests(true);
+                                }
+                                else
+                                {
+                                    antecedent.Result.Channel.SendMessageAsync("Aborting.");
+                                }
+                            }
+                        });
+                    }
+                }
+                catch (Exception e)
+                {
+                    CommonScript.LogError(e.Message);
+                }
+            }
+
+            if (GameManager.Games.Count == 0)
                 return Task.CompletedTask;
 
             if (!GameManager.Games.Any(game => game.PlayerID == reaction.UserId))
                 return Task.CompletedTask;
+
             try
             {
                 foreach (var game in GameManager.Games)

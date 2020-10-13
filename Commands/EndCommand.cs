@@ -12,7 +12,6 @@ namespace VoiceOfAKingdomDiscord.Commands
             Name = "end";
             Abbreviations.Add(Name);
             Description = "Ends your current game.";
-            Parameters = new Dictionary<string, string>();
         }
 
         public override void Run(CommandHandler cmdHandler)

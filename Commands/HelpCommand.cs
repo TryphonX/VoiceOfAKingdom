@@ -17,10 +17,7 @@ namespace VoiceOfAKingdomDiscord.Commands
             Name = "help";
             Abbreviations.Add(Name);
             Description = "Displays help message for all commands or a specific command.";
-            Parameters = new Dictionary<string, string>
-            {
-                { "command", "The command to display help for." }
-            };
+            Parameters.Add("command", "The command to display help for.");
         }
 
         public override void Run(CommandHandler cmdHandler)

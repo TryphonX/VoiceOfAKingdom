@@ -17,10 +17,10 @@ namespace VoiceOfAKingdomDiscord.Commands
             Abbreviations.Add(Name);
             Abbreviations.Add("play");
             Description = "Starts a new game.";
-            Parameters = new Dictionary<string, string>()
-            {
-                {"requests source", "The source of your game's requests. (optional)\n-c(ustom): custom.\n-m(ixed): default and custom."},
-            };
+            Parameters.Add("requests source",
+                "The source of your game's requests.\n" +
+                "-c(ustom): custom.\n" +
+                "-m(ixed): default and custom.");
         }
 
         public override void Run(CommandHandler cmdHandler)
@@ -36,26 +36,29 @@ namespace VoiceOfAKingdomDiscord.Commands
                 // Start a game
 
                 // Find the correct request source
-                if (Regex.IsMatch(cmdHandler.Args[0], @"-c(ustom)?"))
+                if (cmdHandler.Args.Count > 0)
                 {
-                    if (GameManager.HasCustomRequests)
+                    if (Regex.IsMatch(cmdHandler.Args[0], @"-c(ustom)?"))
                     {
-                        requestSource = Request.Source.Custom;
+                        if (GameManager.HasCustomRequests)
+                        {
+                            requestSource = Request.Source.Custom;
+                        }
+                        else
+                        {
+                            cmdHandler.Msg.Channel.SendMessageAsync("Could not load any custom requests. Starting the game with default requests instead.");
+                        }
                     }
-                    else
+                    else if (Regex.IsMatch(cmdHandler.Args[0], @"-m(ixed)?"))
                     {
-                        cmdHandler.Msg.Channel.SendMessageAsync("Could not load any custom requests. Starting the game with default requests instead.");
-                    }
-                }
-                else if (Regex.IsMatch(cmdHandler.Args[0], @"-m(ixed)?"))
-                {
-                    if (GameManager.HasCustomRequests)
-                    {
-                        requestSource = Request.Source.Mixed;
-                    }
-                    else
-                    {
-                        cmdHandler.Msg.Channel.SendMessageAsync("Could not load any custom requests. Starting the game with default requests instead.");
+                        if (GameManager.HasCustomRequests)
+                        {
+                            requestSource = Request.Source.Mixed;
+                        }
+                        else
+                        {
+                            cmdHandler.Msg.Channel.SendMessageAsync("Could not load any custom requests. Starting the game with default requests instead.");
+                        }
                     }
                 }
 

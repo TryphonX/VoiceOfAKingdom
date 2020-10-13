@@ -33,14 +33,11 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static List<Request> CustomRequests { get; } = new List<Request>();
         public static bool HasCustomRequests { get; } = CustomRequests.Count != 0;
 
-        public static void ReloadRequests()
+        public static void ReloadRequests(bool calledFromCommand = false)
         {
             try
             {
-                DefaultRequests.Clear();
-                CustomRequests.Clear();
-
-                #region Request XML Syntax
+                #region Request Node Syntax
                 /* <Request>
                  *  <question>Question?</question>
                  *  <type>military/noble/folk</type>
@@ -50,14 +47,25 @@ namespace VoiceOfAKingdomDiscord.Modules
                  */
                 #endregion
 
-                CommonScript.Log("Loading default requests");
+                if (!calledFromCommand)
+                {
+                    CommonScript.Log("Loading default requests");
 
-                ProcessRequestDocument(DEFAULT_REQUESTS_PATH);
+                    ProcessRequestDocument(DEFAULT_REQUESTS_PATH);
+                }
 
                 if (File.Exists(CUSTOM_REQUESTS_PATH))
                 {
+                    if (calledFromCommand)
+                        CustomRequests.Clear();
+
                     CommonScript.Log("Loading custom requests");
                     ProcessRequestDocument(CUSTOM_REQUESTS_PATH);
+                }
+                else if (calledFromCommand)
+                {
+                    CommonScript.LogWarn($"No file found in: {AppDomain.CurrentDomain.BaseDirectory}{CUSTOM_REQUESTS_PATH.Substring(2)}");
+                    CommonScript.LogWarn("Skipping");
                 }
             }
             catch (Exception e)

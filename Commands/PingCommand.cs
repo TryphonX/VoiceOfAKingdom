@@ -12,7 +12,6 @@ namespace VoiceOfAKingdomDiscord.Commands
             Name = "ping";
             Abbreviations.Add(Name);
             Description = "Check if the bot is responding.";
-            Parameters = new Dictionary<string, string>();
         }
 
         public override void Run(CommandHandler cmdHandler)
