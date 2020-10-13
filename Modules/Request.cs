@@ -32,5 +32,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             ResponseOnAccepted = responseOnAccepted;
             ResponseOnRejected = responseOnRejected;
         }
+
+        public enum Source
+        {
+            Default,
+            Custom,
+            Mixed
+        }
     }
 }

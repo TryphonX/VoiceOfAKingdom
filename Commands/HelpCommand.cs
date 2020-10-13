@@ -10,7 +10,7 @@ namespace VoiceOfAKingdomDiscord.Commands
 {
     class HelpCommand: Command
     {
-        private string SpecificCommand { get; set; }
+        private string commandName;
 
         public HelpCommand()
         {
@@ -32,7 +32,7 @@ namespace VoiceOfAKingdomDiscord.Commands
             // check if there is an arg
             if (cmdHandler.Args.Count > 0)
             {
-                SpecificCommand = cmdHandler.Args[0];
+                commandName = cmdHandler.Args[0];
                 
                 // Iterate through the commands to find if the
                 // first arg is an actual command name
@@ -40,7 +40,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 foreach (Command cmd in CommandHandler.Commands)
                 {
                     // If any of the abbreviations is mentioned save the command
-                    if (cmd.Abbreviations.Any(abbrev => abbrev.Equals(SpecificCommand, StringComparison.OrdinalIgnoreCase)))
+                    if (cmd.Abbreviations.Any(abbrev => abbrev.Equals(commandName, StringComparison.OrdinalIgnoreCase)))
                     {
                         command = cmd;
                     }

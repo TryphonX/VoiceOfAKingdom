@@ -17,6 +17,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static string[] Collaborators { get; } = { "ZarOS69" };
         public static string Title { get; } = "Voice of a Kingdom";
         public static int[] MonthsWith31Days { get; } = { 1, 3, 5, 7, 8, 10, 12 };
+        public static Random Rng { get; } = new Random();
         public static EmbedFieldBuilder EmptyEmbedField =>
             new EmbedFieldBuilder()
                 .WithName("\u200B")
@@ -76,7 +77,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             DateTime start = new DateTime(1600, 1, 1);
             int range = (DateTime.Today - start).Days;
-            return start.AddDays(new Random().Next(range)).ToLocalTime();
+            return start.AddDays(Rng.Next(range)).ToLocalTime();
         }
 
         public static int RoundToX(int num, int roundTo = 10)

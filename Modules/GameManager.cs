@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection.Metadata.Ecma335;
@@ -18,6 +19,7 @@ namespace VoiceOfAKingdomDiscord.Modules
     class GameManager
     {
         private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
+        private const string CUSTOM_REQUESTS_PATH = "./CustomRequests.xml";
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
@@ -30,16 +32,14 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public List<Game> Games { get; } = new List<Game>();
         private const int PROGRESS_BAR_BOXES = 10;
-        public List<Request> Requests { get; } = new List<Request>();
+        public List<Request> DefaultRequests { get; } = new List<Request>();
+        public List<Request> CustomRequests { get; } = new List<Request>();
+
 
         public GameManager()
         {
             try
             {
-                CommonScript.Log("Loading requests");
-                XmlDocument doc = new XmlDocument();
-                doc.Load(DEFAULT_REQUESTS_PATH);
-
                 #region Request XML Syntax
                 /* <Request>
                  *  <question>Question?</question>
@@ -50,59 +50,14 @@ namespace VoiceOfAKingdomDiscord.Modules
                  */
                 #endregion
 
-                #region Init vars
-                string question;
-                string type;
-                short folk;
-                short noble;
-                short mil;
-                short wealth;
-                short hap;
-                short charisma;
-                string responseOnAccepted;
-                string responseOnRejected;
-                #endregion
+                CommonScript.Log("Loading default requests");
 
-                foreach (XmlNode requestNode in doc.DocumentElement)
+                ProcessRequestDocument(DEFAULT_REQUESTS_PATH);
+
+                if (File.Exists(CUSTOM_REQUESTS_PATH))
                 {
-                    if (!requestNode.Name.Equals(XmlNodeEnum.Request))
-                        continue;
-
-                    question = requestNode[XmlNodeEnum.Question].InnerText;
-                    type = requestNode[XmlNodeEnum.Type].InnerText;
-
-                    #region Accept
-                    folk = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Folk]);
-                    noble = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Noble]);
-                    mil = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Military]);
-                    wealth = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Wealth]);
-                    hap = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Happiness]);
-                    charisma = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Charisma]);
-
-                    KingdomStatsClass kingdomStatsOnAccept = new KingdomStatsClass(folk, noble, mil, wealth);
-                    PersonalStatsClass personalStatsOnAccept = new PersonalStatsClass(hap, charisma);
-
-                    responseOnAccepted = requestNode[XmlNodeEnum.Accept].InnerText;
-                    #endregion
-
-                    #region Reject
-                    folk = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Folk]);
-                    noble = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Noble]);
-                    mil = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Military]);
-                    wealth = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Wealth]);
-                    hap = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Happiness]);
-                    charisma = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Charisma]);
-
-                    KingdomStatsClass kingdomStatsOnReject = new KingdomStatsClass(folk, noble, mil, wealth);
-                    PersonalStatsClass personalStatsOnReject = new PersonalStatsClass(hap, charisma);
-                    
-                    responseOnRejected = requestNode[XmlNodeEnum.Reject].InnerText;
-                    #endregion
-
-                    Requests.Add(new Request(question, Person.Parse(type),
-                        kingdomStatsOnAccept, personalStatsOnAccept,
-                        kingdomStatsOnReject, personalStatsOnReject,
-                        responseOnAccepted, responseOnRejected));
+                    CommonScript.Log("Loading custom requests");
+                    ProcessRequestDocument(CUSTOM_REQUESTS_PATH);
                 }
             }
             catch (Exception e)
@@ -112,6 +67,79 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             CommonScript.Log("Finished loading requests");
+        }
+
+        private void ProcessRequestDocument(string path)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(path);
+
+            bool custom = path.Equals(CUSTOM_REQUESTS_PATH);
+
+            #region Init vars
+            string question;
+            string type;
+            short folk;
+            short noble;
+            short mil;
+            short wealth;
+            short hap;
+            short charisma;
+            string responseOnAccepted;
+            string responseOnRejected;
+            #endregion
+
+            foreach (XmlNode requestNode in doc.DocumentElement)
+            {
+                if (!requestNode.Name.Equals(XmlNodeEnum.Request))
+                    return;
+
+                question = requestNode[XmlNodeEnum.Question].InnerText;
+                type = requestNode[XmlNodeEnum.Type].InnerText;
+
+                #region Accept
+                folk = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Folk]);
+                noble = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Noble]);
+                mil = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Military]);
+                wealth = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Wealth]);
+                hap = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Happiness]);
+                charisma = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Charisma]);
+
+                KingdomStatsClass kingdomStatsOnAccept = new KingdomStatsClass(folk, noble, mil, wealth);
+                PersonalStatsClass personalStatsOnAccept = new PersonalStatsClass(hap, charisma);
+
+                responseOnAccepted = requestNode[XmlNodeEnum.Accept].InnerText;
+                #endregion
+
+                #region Reject
+                folk = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Folk]);
+                noble = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Noble]);
+                mil = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Military]);
+                wealth = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Wealth]);
+                hap = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Happiness]);
+                charisma = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Charisma]);
+
+                KingdomStatsClass kingdomStatsOnReject = new KingdomStatsClass(folk, noble, mil, wealth);
+                PersonalStatsClass personalStatsOnReject = new PersonalStatsClass(hap, charisma);
+
+                responseOnRejected = requestNode[XmlNodeEnum.Reject].InnerText;
+                #endregion
+
+                if (!custom)
+                {
+                    DefaultRequests.Add(new Request(question, Person.Parse(type),
+                        kingdomStatsOnAccept, personalStatsOnAccept,
+                        kingdomStatsOnReject, personalStatsOnReject,
+                        responseOnAccepted, responseOnRejected));
+                }
+                else
+                {
+                    CustomRequests.Add(new Request(question, Person.Parse(type),
+                        kingdomStatsOnAccept, personalStatsOnAccept,
+                        kingdomStatsOnReject, personalStatsOnReject,
+                        responseOnAccepted, responseOnRejected));
+                }
+            }
         }
 
         #region Fake Enums
@@ -465,8 +493,26 @@ namespace VoiceOfAKingdomDiscord.Modules
                 });
         }
 
-        public static Request GetRandomRequest() =>
-            App.GameMgr.Requests[new Random().Next(0, App.GameMgr.Requests.Count - 1)];
+        public static Request GetRandomRequest(Request.Source source = Request.Source.Default)
+        {
+            if (source != Request.Source.Default && App.GameMgr.HasCustomRequests())
+            {       
+                if (source == Request.Source.Custom || CommonScript.Rng.Next(0, 100) < 50)
+                {
+                    // Custom (the rng is the chances of custom when in mixed)
+                    return App.GameMgr.CustomRequests[CommonScript.Rng.Next(0, App.GameMgr.CustomRequests.Count - 1)];
+                }
+                else
+                {
+                    // Default
+                    return App.GameMgr.DefaultRequests[CommonScript.Rng.Next(0, App.GameMgr.DefaultRequests.Count - 1)];
+                }
+            }
+            else
+            {
+                return App.GameMgr.DefaultRequests[CommonScript.Rng.Next(0, App.GameMgr.DefaultRequests.Count - 1)];
+            }
+        }
 
         public static bool HasGame(ulong userID) =>
             App.GameMgr.Games.Any(game => game.PlayerID == userID);
@@ -490,7 +536,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             int minDays = monthDays - date.Day + 1;
             int maxDays = monthDays * 2 - date.Day;
 
-            return date.AddDays(new Random().Next(minDays, maxDays));
+            return date.AddDays(CommonScript.Rng.Next(minDays, maxDays));
         }
 
         /// <summary>
@@ -499,13 +545,11 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <param name="game"></param>
         /// <returns></returns>
         private static bool CheckForBigEvents(Game game)
-        {
-            Random rng = new Random();
-            
+        {            
             // Coup
             if (game.KingdomStats.Military < 20)
             {
-                if (rng.Next(0, 100) < MILITARY_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < MILITARY_THRESHOLD)
                 {
                     return CoupStaged(game);
                 }
@@ -513,7 +557,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             
             if (game.KingdomStats.Folks < 20)
             {
-                if (rng.Next(0, 100) < FOLK_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < FOLK_THRESHOLD)
                 {
                     return RevolutionStarted(game);
                 }
@@ -521,7 +565,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             
             if (game.KingdomStats.Nobles < 20)
             {
-                if (rng.Next(0, 100) < NOBLE_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < NOBLE_THRESHOLD)
                 {
                     return AssassinationAttempted(game);
                 }
@@ -543,10 +587,9 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static bool CoupStaged(Game game)
         {
-            Random rng = new Random();
             const short MURDER_THRESHOLD = 70;
 
-            if (rng.Next(0,100) < MURDER_THRESHOLD)
+            if (CommonScript.Rng.Next(0,100) < MURDER_THRESHOLD)
             {
                 // Death
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -582,11 +625,10 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static bool RevolutionStarted(Game game)
         {
-            Random rng = new Random();
             const short MURDER_THRESHOLD = 20;
             const short CHARISMA_WAY_OUT_THRESHOLD = 50;
 
-            if (rng.Next(0, 100) < MURDER_THRESHOLD)
+            if (CommonScript.Rng.Next(0, 100) < MURDER_THRESHOLD)
             {
                 // Murder (most likely)
                 bool murdered = true;
@@ -596,7 +638,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     "you hear the crowds chanting \"Give us the King's head!\". The guards are forced to let some of them inside. Soon enough, " +
                     "your door opens and the leader of the revolution along with 2 other men enter the room carrying their swords... ");
 
-                if (game.PersonalStats.Charisma > 80 && rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+                if (game.PersonalStats.Charisma > 80 && CommonScript.Rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
                 {
                     // Charisma backdoor
                     murdered = false;
@@ -639,11 +681,10 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static bool AssassinationAttempted(Game game)
         {
-            Random rng = new Random();
             const short CHARISMA_WAY_OUT_THRESHOLD = 20;
             const short FIGHT_IT_OUT_THRESHOLD = 40;
 
-            if (game.PersonalStats.Charisma > 80 && rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+            if (game.PersonalStats.Charisma > 80 && CommonScript.Rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
             {
                 // Charisma backdoor
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -664,7 +705,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     IncValues(incHappiness: SMALL_CHANGE);
                 return false;
             }
-            else if (rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
+            else if (CommonScript.Rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
             {
                 // Fought it out
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -705,9 +746,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static bool ReachedBankruptcy(Game game)
         {
-            Random rng = new Random();
-
-            if (game.KingdomStats.Military > 70 && rng.Next(0, 100) < 50)
+            if (game.KingdomStats.Military > 70 && CommonScript.Rng.Next(0, 100) < 50)
             {
                 // Got ally
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -744,5 +783,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 return true;
             }
         }
+
+        public bool HasCustomRequests() =>
+            CustomRequests.Count != 0;
     }
 }

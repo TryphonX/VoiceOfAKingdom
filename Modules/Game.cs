@@ -18,13 +18,15 @@ namespace VoiceOfAKingdomDiscord.Modules
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
         public Request CurrentRequest { get; set; }
+        public Request.Source RequestSource { get; }
         public bool IsDead { get; set; } = false;
 
-        public Game(ulong userID, CommandHandler cmdHandler)
+        public Game(CommandHandler cmdHandler, Request.Source requestSource)
         {
             try
             {
-                PlayerID = userID;
+                PlayerID = cmdHandler.Msg.Author.Id;
+                RequestSource = requestSource;
 
                 SocketGuild cachedGuild = null;
                 ulong categoryID = 0;

@@ -14,10 +14,8 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public PersonalStatsClass()
         {
-            Random random = new Random();
-
-            Happiness = (short)random.Next(30, 60);
-            Charisma = (short)random.Next(30, 60);
+            Happiness = (short)CommonScript.Rng.Next(30, 60);
+            Charisma = (short)CommonScript.Rng.Next(30, 60);
         }
 
         public PersonalStatsClass(short happiness = 0, short charisma = 0)

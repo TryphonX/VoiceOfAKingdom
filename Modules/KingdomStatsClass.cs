@@ -18,12 +18,10 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public KingdomStatsClass()
         {
-            Random random = new Random();
-
-            Folks = (short)random.Next(40, 60);
-            Wealth = (short)random.Next(40, 60);
-            Nobles = (short)random.Next(40, 60);
-            Military = (short)random.Next(40, 60);
+            Folks = (short)CommonScript.Rng.Next(40, 60);
+            Wealth = (short)CommonScript.Rng.Next(40, 60);
+            Nobles = (short)CommonScript.Rng.Next(40, 60);
+            Military = (short)CommonScript.Rng.Next(40, 60);
         }
 
         public KingdomStatsClass(short folks = 0, short nobles = 0, short military = 0, short wealth = 0)
