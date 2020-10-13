@@ -38,7 +38,7 @@ namespace VoiceOfAKingdomDiscord.Commands
                 // Find the correct request source
                 if (Regex.IsMatch(cmdHandler.Args[0], @"-c(ustom)?"))
                 {
-                    if (App.GameMgr.HasCustomRequests())
+                    if (GameManager.HasCustomRequests)
                     {
                         requestSource = Request.Source.Custom;
                     }
@@ -49,10 +49,17 @@ namespace VoiceOfAKingdomDiscord.Commands
                 }
                 else if (Regex.IsMatch(cmdHandler.Args[0], @"-m(ixed)?"))
                 {
-                    requestSource = Request.Source.Mixed;
+                    if (GameManager.HasCustomRequests)
+                    {
+                        requestSource = Request.Source.Mixed;
+                    }
+                    else
+                    {
+                        cmdHandler.Msg.Channel.SendMessageAsync("Could not load any custom requests. Starting the game with default requests instead.");
+                    }
                 }
 
-                App.GameMgr.Games.Add(new Game(cmdHandler, requestSource));
+                GameManager.Games.Add(new Game(cmdHandler, requestSource));
             }
         }
     }

@@ -1,45 +1,45 @@
 ﻿using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Xml;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
-    class GameManager
+    static class GameManager
     {
         private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
         private const string CUSTOM_REQUESTS_PATH = "./CustomRequests.xml";
+
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
+        
         private const short SMALL_CHANGE = 3;
         private const short MEDIUM_CHANGE = 7;
         private const short BIG_CHANGE = 18;
+        
         private const short MILITARY_THRESHOLD = 50;
         private const short FOLK_THRESHOLD = 50;
         private const short NOBLE_THRESHOLD = 50;
-
-        public List<Game> Games { get; } = new List<Game>();
+        
         private const int PROGRESS_BAR_BOXES = 10;
-        public List<Request> DefaultRequests { get; } = new List<Request>();
-        public List<Request> CustomRequests { get; } = new List<Request>();
 
+        public static List<Game> Games { get; } = new List<Game>();
+        public static List<Request> DefaultRequests { get; private set; }
+        public static List<Request> CustomRequests { get; private set; }
+        public static bool HasCustomRequests { get; } = CustomRequests.Count != 0;
 
-        public GameManager()
+        public static void ReloadRequests()
         {
             try
             {
+                DefaultRequests = new List<Request>();
+                CustomRequests = new List<Request>();
+
                 #region Request XML Syntax
                 /* <Request>
                  *  <question>Question?</question>
@@ -69,7 +69,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             CommonScript.Log("Finished loading requests");
         }
 
-        private void ProcessRequestDocument(string path)
+        private static void ProcessRequestDocument(string path)
         {
             XmlDocument doc = new XmlDocument();
             doc.Load(path);
@@ -171,7 +171,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             game = null;
             if (HasGame(userID))
             {
-                foreach (var gameMgrGame in App.GameMgr.Games)
+                foreach (var gameMgrGame in Games)
                 {
                     if (gameMgrGame.PlayerID == userID)
                     {
@@ -220,7 +220,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
 
         private static void SetDead(ulong playerID) =>
-            App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == playerID).IsDead = true;
+            Games.Find(listedGame => listedGame.PlayerID == playerID).IsDead = true;
 
         /// <summary>
         /// Returns if the game ended successfully.
@@ -234,7 +234,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 success = true;
                 GetGameGuildChannel(game).DeleteAsync();
-                App.GameMgr.Games.Remove(game);
+                Games.Remove(game);
             }
             catch (Exception e)
             {
@@ -477,7 +477,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
             PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
-            game.CurrentRequest = GetRandomRequest();
+            game.CurrentRequest = GetRandomRequest(game.RequestSource);
 
             game.Date = AddMonthToDate(game.Date);
 
@@ -493,29 +493,29 @@ namespace VoiceOfAKingdomDiscord.Modules
                 });
         }
 
-        public static Request GetRandomRequest(Request.Source source = Request.Source.Default)
+        public static Request GetRandomRequest(Request.Source source)
         {
-            if (source != Request.Source.Default && App.GameMgr.HasCustomRequests())
+            if (source != Request.Source.Default && HasCustomRequests)
             {       
                 if (source == Request.Source.Custom || CommonScript.Rng.Next(0, 100) < 50)
                 {
                     // Custom (the rng is the chances of custom when in mixed)
-                    return App.GameMgr.CustomRequests[CommonScript.Rng.Next(0, App.GameMgr.CustomRequests.Count - 1)];
+                    return CustomRequests[CommonScript.Rng.Next(0, CustomRequests.Count - 1)];
                 }
                 else
                 {
                     // Default
-                    return App.GameMgr.DefaultRequests[CommonScript.Rng.Next(0, App.GameMgr.DefaultRequests.Count - 1)];
+                    return DefaultRequests[CommonScript.Rng.Next(0, DefaultRequests.Count - 1)];
                 }
             }
             else
             {
-                return App.GameMgr.DefaultRequests[CommonScript.Rng.Next(0, App.GameMgr.DefaultRequests.Count - 1)];
+                return DefaultRequests[CommonScript.Rng.Next(0, DefaultRequests.Count - 1)];
             }
         }
 
         public static bool HasGame(ulong userID) =>
-            App.GameMgr.Games.Any(game => game.PlayerID == userID);
+            Games.Any(game => game.PlayerID == userID);
 
         private static DateTime AddMonthToDate(DateTime date)
         {
@@ -647,7 +647,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                         "thanks to your charisma. You had to agree to sign their constitution however, which is definitely going to mix things up " +
                         "in your kingdom.");
 
-                    App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
+                    Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
                 }
 
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -674,7 +674,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.RaisedFist)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats.InvertReputations();
                 return false;
             }
         }
@@ -699,9 +699,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.HitBackOfHelmet)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
                     .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.
                     IncValues(incHappiness: SMALL_CHANGE);
                 return false;
             }
@@ -721,9 +721,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.PointingSword)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
                     .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
                     .IncValues(incHappiness: -MEDIUM_CHANGE);
                 return false;
             }
@@ -760,10 +760,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.HoldingSwordToTheSky)
                     .Build()).Wait();
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
                     .IncValues(incFolks: -SMALL_CHANGE, incMilitary: -SMALL_CHANGE, incWealth: BIG_CHANGE);
 
-                App.GameMgr.Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
+                Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
                     .IncValues(incHappiness: BIG_CHANGE, incCharisma: SMALL_CHANGE);
                 return false;
             }
@@ -783,8 +783,5 @@ namespace VoiceOfAKingdomDiscord.Modules
                 return true;
             }
         }
-
-        public bool HasCustomRequests() =>
-            CustomRequests.Count != 0;
     }
 }

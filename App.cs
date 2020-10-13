@@ -11,7 +11,6 @@ namespace VoiceOfAKingdomDiscord
     class App
     {
         public static DiscordSocketClient Client { get; private set; }
-        public static GameManager GameMgr { get; private set; }
 
         static void Main(string[] args)
         {
@@ -19,7 +18,7 @@ namespace VoiceOfAKingdomDiscord
             Config.Reload();
             SendStartingMessage();
 
-            GameMgr = new GameManager();
+            GameManager.ReloadRequests();
 
             Console.CancelKeyPress += OnCancelKeyPress;
 
@@ -38,9 +37,9 @@ namespace VoiceOfAKingdomDiscord
         {
             CommonScript.Log("Ending running games");
 
-            if (GameMgr.Games.Count > 0)
+            if (GameManager.Games.Count > 0)
             {
-                foreach (var game in GameMgr.Games)
+                foreach (var game in GameManager.Games)
                 {
                     // TODO: Save before ending
                     GameManager.EndGame(game);

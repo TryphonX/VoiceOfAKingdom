@@ -54,14 +54,14 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static Task OnReactionAdded(Cacheable<IUserMessage, ulong> unCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            if (App.GameMgr.Games.Count == 0 || reaction.UserId == App.Client.CurrentUser.Id)
+            if (GameManager.Games.Count == 0 || reaction.UserId == App.Client.CurrentUser.Id)
                 return Task.CompletedTask;
 
-            if (!App.GameMgr.Games.Any(game => game.PlayerID == reaction.UserId))
+            if (!GameManager.Games.Any(game => game.PlayerID == reaction.UserId))
                 return Task.CompletedTask;
             try
             {
-                foreach (var game in App.GameMgr.Games)
+                foreach (var game in GameManager.Games)
                 {
                     // Not the game's player
                     if (reaction.UserId != game.PlayerID)
