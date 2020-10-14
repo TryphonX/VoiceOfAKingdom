@@ -219,7 +219,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
                     .WithColor(Color.Teal)
                     .WithTitle("Game over.")
-                    .WithDescription($"You ruled for {yearsInCommand} {yearsWord} and {monthsInCommand} {monthsWords}")
+                    .WithDescription($"You ruled for {yearsInCommand} {yearsWord} and {monthsInCommand} {monthsWords}.")
                     .WithThumbnailUrl(Image.WolfShield)
                     .AddField(new EmbedFieldBuilder()
                         .WithName("End game?")
@@ -300,12 +300,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                 CommonScript.LogError("Empty kingdom/personal stats.");
             }
 
-            CommonScript.DebugLog($"game.Birthdate == {game.BirthDate}");
-
             // Base
             EmbedBuilder embed = new CustomEmbed()
                 .WithAuthor(new EmbedAuthorBuilder()
-                    .WithName($"Month {game.MonthsInControl+1} | {game.Date.ToLongDateString()} | {game.Age}"))
+                    .WithName($"Month {game.MonthsInControl+1} | {game.Date.ToLongDateString()} | {game.Age} Years old"))
                 .WithTitle($"\\{game.CurrentRequest.Person.Icon} {game.CurrentRequest.Person.Name}")
                 .WithThumbnailUrl(game.CurrentRequest.Person.ImgUrl)
                 .WithColor(game.CurrentRequest.Person.Color)
