@@ -14,6 +14,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
         private const string CUSTOM_REQUESTS_PATH = "./CustomRequests.xml";
 
+        private const int MAX_MONTHS_TO_PASS = 5;
+
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
@@ -202,7 +204,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 SetDead(game.PlayerID);
 
                 int yearsInCommand = game.MonthsInControl / 12;
-                int monthsInCommand = (game.MonthsInControl - 1) % 12;
+                int monthsInCommand = game.MonthsInControl % 12;
 
                 string yearsWord = yearsInCommand != 1 ? "years" : "year";
                 string monthsWords = monthsInCommand != 1 ? "months" : "month";
@@ -294,7 +296,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             // Base
             EmbedBuilder embed = new CustomEmbed()
                 .WithAuthor(new EmbedAuthorBuilder()
-                    .WithName($"Month {++game.MonthsInControl} | {game.Date.ToLongDateString()}"))
+                    .WithName($"Month {game.MonthsInControl+1} | {game.Date.ToLongDateString()}"))
                 .WithTitle($"\\{game.CurrentRequest.Person.Icon} {game.CurrentRequest.Person.Name}")
                 .WithThumbnailUrl(game.CurrentRequest.Person.ImgUrl)
                 .WithColor(game.CurrentRequest.Person.Color)
@@ -455,7 +457,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static void ResolveRequest(Game game, bool accepted)
         {
-            CommonScript.DebugLog("init");
             KingdomStatsClass incKingdomStats = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
             PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
 
@@ -467,7 +468,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             if (CheckForBigEvents(game))
                 return;
 
-            NextMonth(game, accepted);
+            Advance(game, accepted);
         }
 
         private static Embed GetResolveRequestEmbed(Game game, bool accepted)
@@ -481,13 +482,17 @@ namespace VoiceOfAKingdomDiscord.Modules
                 .Build();
         }
 
-        private static void NextMonth(Game game, bool accepted)
+        private static void Advance(Game game, bool accepted)
         {
             KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
             PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
             game.CurrentRequest = GetRandomRequest(game.RequestSource);
 
-            game.Date = AddMonthToDate(game.Date);
+            // Add 1 to 5 months
+            for (int i = 0; i < CommonScript.Rng.Next(1, MAX_MONTHS_TO_PASS); i++)
+            {
+                AddMonthToDate(game);
+            }
 
             GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
                 .ContinueWith(antecedent =>
@@ -525,13 +530,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static bool HasGame(ulong userID) =>
             Games.Any(game => game.PlayerID == userID);
 
-        private static DateTime AddMonthToDate(DateTime date)
+        private static void AddMonthToDate(Game game)
         {
-            int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == date.Month) ? 31 : 30;
+            int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == game.Date.Month) ? 31 : 30;
 
-            if (date.Month == 2)
+            if (game.Date.Month == 2)
             {
-                if (date.Year % 4 == 0)
+                if (game.Date.Year % 4 == 0)
                 {
                     monthDays = 29;
                 }
@@ -541,10 +546,11 @@ namespace VoiceOfAKingdomDiscord.Modules
                 }
             }
 
-            int minDays = monthDays - date.Day + 1;
-            int maxDays = monthDays * 2 - date.Day;
+            int minDays = monthDays - game.Date.Day + 1;
+            int maxDays = monthDays * 2 - game.Date.Day;
 
-            return date.AddDays(CommonScript.Rng.Next(minDays, maxDays));
+            game.Date = game.Date.AddDays(CommonScript.Rng.Next(minDays, maxDays));
+            game.MonthsInControl++;
         }
 
         /// <summary>

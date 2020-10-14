@@ -15,9 +15,57 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             App.Client.Log += OnLog;
             App.Client.MessageReceived += OnMessageReceived;
-            App.Client.ReactionAdded += OnReactionAdded;
+            App.Client.ReactionAdded += CheckForGameReaction;
+            App.Client.ReactionAdded += CheckForReload;
             App.Client.LatencyUpdated += OnLatencyUpdated;
             App.Client.Disconnected += OnDisconnected;
+        }
+
+        private static Task CheckForReload(Cacheable<IUserMessage, ulong> unCachedMsg, ISocketMessageChannel channel, SocketReaction reaction)
+        {
+            if (reaction.UserId == App.Client.CurrentUser.Id)
+                return Task.CompletedTask;
+
+            if (reaction.UserId != Config.OwnerID)
+                return Task.CompletedTask;
+
+            // Reload msg check
+            try
+            {
+                bool accepted = reaction.Emote.Name.Equals(CommonScript.UnicodeAccept);
+                bool rejected = reaction.Emote.Name.Equals(CommonScript.UnicodeReject);
+
+                if (accepted || rejected)
+                {
+                    channel.GetMessageAsync(reaction.MessageId)
+                    .ContinueWith(antecedent =>
+                    {
+                        if (antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
+                        Regex.IsMatch(antecedent.Result.Content, @"^Are you sure you want to reload all custom requests\?"))
+                        {
+                            antecedent.Result.RemoveAllReactionsAsync();
+                            if (accepted)
+                            {
+                                antecedent.Result.Channel.SendMessageAsync("Reloading custom requests.");
+                                GameManager.ReloadRequests(true);
+                            }
+                            else
+                            {
+                                antecedent.Result.Channel.SendMessageAsync("Aborting.");
+                            }
+                        }
+                    });
+
+                    return Task.CompletedTask;
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                return Task.CompletedTask;
+            }
         }
 
         private static Task OnDisconnected(Exception e)
@@ -36,62 +84,20 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             if (currentLatency >= 400 && previousLatency < 400)
             {
-                CommonScript.LogWarn($"High latency noted.\tLatency: {currentLatency}");
+                CommonScript.LogWarn($"High latency noted. Latency: {currentLatency}");
             }
             else if (currentLatency < 400 && previousLatency >= 400)
             {
-                CommonScript.LogWarn($"Latency restored.\tLatency: {currentLatency}");
+                CommonScript.LogWarn($"Latency restored. Latency: {currentLatency}");
             }
 
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="unCachedMessage"></param>
-        /// <param name="channel"></param>
-        /// <param name="reaction"></param>
-        /// <returns></returns>
-        private static Task OnReactionAdded(Cacheable<IUserMessage, ulong> unCachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
+        private static Task CheckForGameReaction(Cacheable<IUserMessage, ulong> unCachedMsg, ISocketMessageChannel channel, SocketReaction reaction)
         {
             if (reaction.UserId == App.Client.CurrentUser.Id)
                 return Task.CompletedTask;
-
-            if (reaction.UserId == Config.OwnerID)
-            {
-                try
-                {
-                    bool accepted = reaction.Emote.Name.Equals(CommonScript.UnicodeAccept);
-                    bool rejected = reaction.Emote.Name.Equals(CommonScript.UnicodeReject);
-
-                    if (accepted || rejected)
-                    {
-                        channel.GetMessageAsync(reaction.MessageId)
-                        .ContinueWith(antecedent =>
-                        {
-                            if (antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
-                            Regex.IsMatch(antecedent.Result.Content, @"^Are you sure you want to reload all custom requests\?"))
-                            {
-                                antecedent.Result.RemoveAllReactionsAsync();
-                                if (accepted)
-                                {
-                                    antecedent.Result.Channel.SendMessageAsync("Reloading custom requests.");
-                                    GameManager.ReloadRequests(true);
-                                }
-                                else
-                                {
-                                    antecedent.Result.Channel.SendMessageAsync("Aborting.");
-                                }
-                            }
-                        });
-                    }
-                }
-                catch (Exception e)
-                {
-                    CommonScript.LogError(e.Message);
-                }
-            }
 
             if (GameManager.Games.Count == 0)
                 return Task.CompletedTask;
@@ -101,65 +107,60 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             try
             {
-                foreach (var game in GameManager.Games)
+                // Check if the user has a game
+                // if they do, proceed
+                if (GameManager.TryGetGame(reaction.UserId, out Game game))
                 {
-                    // Not the game's player
-                    if (reaction.UserId != game.PlayerID)
-                        continue;
-
                     // Not the game's channel
                     // Safe to exit the task
                     if (channel.Id != game.ChannelID)
-                        break;
+                        return Task.CompletedTask;
 
-                    if (reaction.Emote.Name.Equals(CommonScript.UnicodeAccept))
+                    bool accepted = reaction.Emote.Name.Equals(CommonScript.UnicodeAccept);
+                    bool invalidReaction = !accepted && !reaction.Emote.Name.Equals(CommonScript.UnicodeReject);
+
+                    if (!invalidReaction)
                     {
-                        // Proceed to next month calculations
-                        // Or end the game
+                        // Accepted or Rjected
                         if (!game.IsDead)
                         {
-                            InitNewMonthPreparations(channel, reaction, game, true);
+                            InitResolveRequestAsync(channel, reaction, game, accepted);
+                            return Task.CompletedTask;
                         }
                         else
                         {
+                            if (!accepted)
+                            {
+                                // Somehow reacted with a no to an end game message.
+                                CommonScript.LogWarn($"Invalid reaction ({CommonScript.UnicodeReject}) for a finished game. Possibly wrong permissions.");
+                            }
+
                             GameManager.EndGame(game);
+                            return Task.CompletedTask;
                         }
-                        break;
-                    }
-                    else if (reaction.Emote.Name.Equals(CommonScript.UnicodeReject))
-                    {
-                        // Proceed to next month calculations
-                        if (!game.IsDead)
-                        {
-                            InitNewMonthPreparations(channel, reaction, game, false);
-                        }
-                        else
-                        {
-                            CommonScript.LogWarn("Invalid reaction for a finished game. Possibly wrong permissions.");
-                            GameManager.EndGame(game);
-                        }
-                        break;
                     }
                     else
                     {
                         // Unexpected behavior
                         // Someone most likely broke the permissions
                         CommonScript.LogWarn("Invalid reaction. Possibly wrong permissions.");
-                        break;
+                        return Task.CompletedTask;
                     }
                 }
+
+                // No game
+                return Task.CompletedTask;
             }
             catch (Exception e)
             {
                 CommonScript.LogError(e.Message);
+                return Task.CompletedTask;
             }
-
-            return Task.CompletedTask;
         }
 
-        private static void InitNewMonthPreparations(ISocketMessageChannel channel, SocketReaction reaction, Game game, bool accepted)
+        private static async void InitResolveRequestAsync(ISocketMessageChannel channel, SocketReaction reaction, Game game, bool accepted)
         {
-            channel.GetMessageAsync(reaction.MessageId)
+            await channel.GetMessageAsync(reaction.MessageId)
                 .ContinueWith(antecedent =>
                 {
                     antecedent.Result.RemoveAllReactionsAsync();
