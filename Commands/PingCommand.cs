@@ -22,7 +22,7 @@ namespace VoiceOfAKingdomDiscord.Commands
 
             if (ping > 400)
             {
-                CommonScript.LogWarn($"High latency noted.\tLatency: {ping}");
+                CommonScript.LogWarn($"High latency noted. Latency: {ping}");
             }
 
             cmdHandler.Msg.Channel.SendMessageAsync($"Response time: `{ping}ms`");

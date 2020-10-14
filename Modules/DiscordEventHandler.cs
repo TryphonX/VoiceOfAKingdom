@@ -21,6 +21,13 @@ namespace VoiceOfAKingdomDiscord.Modules
             App.Client.Disconnected += OnDisconnected;
         }
 
+        /// <summary>
+        /// Checks if the reaction is a reply to the reload command.
+        /// </summary>
+        /// <param name="unCachedMsg"></param>
+        /// <param name="channel"></param>
+        /// <param name="reaction"></param>
+        /// <returns></returns>
         private static Task CheckForReload(Cacheable<IUserMessage, ulong> unCachedMsg, ISocketMessageChannel channel, SocketReaction reaction)
         {
             if (reaction.UserId == App.Client.CurrentUser.Id)

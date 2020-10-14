@@ -20,11 +20,14 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(cmdHandler);
 
-            cmdHandler.Msg.Channel.SendMessageAsync($"Are you sure you want to reload all custom requests?\n" +
-                $"**This will likely affect the {GameManager.Games.Count} game(s) currently running.**")
+            cmdHandler.Msg.Channel.SendMessageAsync(embed: new CustomEmbed()
+                .WithTitle($"⚠️ Are you sure you want to reload all custom requests?" +
+                $"This will likely affect the {GameManager.Games.Count} game(s) currently running.")
+                .Build())
                 .ContinueWith(antecedent =>
                 {
-                    antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept));
+                    antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
+                    antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject));
                 });
         }
     }
