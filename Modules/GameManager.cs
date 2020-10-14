@@ -35,8 +35,9 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static List<Request> CustomRequests { get; } = new List<Request>();
         public static bool HasCustomRequests { get; } = CustomRequests.Count != 0;
 
-        public static void ReloadRequests(bool calledFromCommand = false)
+        public static bool ReloadRequests(bool calledFromCommand = false)
         {
+            bool success = false;
             try
             {
                 #region Request Node Syntax
@@ -49,6 +50,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                  */
                 #endregion
 
+                // Default
                 if (!calledFromCommand)
                 {
                     CommonScript.Log("Loading default requests");
@@ -56,6 +58,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     ProcessRequestDocument(DEFAULT_REQUESTS_PATH);
                 }
 
+                // Custom
                 if (File.Exists(CUSTOM_REQUESTS_PATH))
                 {
                     if (calledFromCommand)
@@ -63,11 +66,14 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                     CommonScript.Log("Loading custom requests");
                     ProcessRequestDocument(CUSTOM_REQUESTS_PATH);
+
+                    success = true;
                 }
                 else if (calledFromCommand)
                 {
                     CommonScript.LogWarn($"No file found in: {AppDomain.CurrentDomain.BaseDirectory}{CUSTOM_REQUESTS_PATH.Substring(2)}");
-                    CommonScript.LogWarn("Skipping");
+                    
+                    success = false;
                 }
             }
             catch (Exception e)
@@ -77,6 +83,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             CommonScript.Log("Finished loading requests");
+            return success;
         }
 
         private static void ProcessRequestDocument(string path)

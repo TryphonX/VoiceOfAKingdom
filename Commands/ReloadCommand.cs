@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,8 +21,9 @@ namespace VoiceOfAKingdomDiscord.Commands
             base.Run(cmdHandler);
 
             cmdHandler.Msg.Channel.SendMessageAsync(embed: new CustomEmbed()
-                .WithTitle($"⚠️ Are you sure you want to reload all custom requests?" +
-                $"This will likely affect the {GameManager.Games.Count} game(s) currently running.")
+                .WithColor(Color.DarkRed)
+                .WithTitle("⚠️ Are you sure you want to reload all custom requests?")
+                .WithDescription($"This will likely affect the {GameManager.Games.Count} game(s) currently running.")
                 .Build())
                 .ContinueWith(antecedent =>
                 {

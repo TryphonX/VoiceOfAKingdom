@@ -48,18 +48,32 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .ContinueWith(antecedent =>
                     {
                         if (antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
-                        Regex.IsMatch(antecedent.Result.Content, @"^Are you sure you want to reload all custom requests\?"))
+                        antecedent.Result.Embeds.Any(embed => Regex.IsMatch(embed.Title, @"Are you sure you want to reload all custom requests\?")))
                         {
                             antecedent.Result.RemoveAllReactionsAsync();
                             if (accepted)
                             {
-                                antecedent.Result.Channel.SendMessageAsync("Reloading custom requests.");
-                                GameManager.ReloadRequests(true);
+                                bool success = GameManager.ReloadRequests(true);
+                                EmbedBuilder embed = new CustomEmbed()
+                                    .WithColor(success ? Color.Green : Color.DarkRed)
+                                    .WithTitle(success ? "Reload successful." : "Reload failed.");
+
+                                if (!success)
+                                {
+                                    embed.WithDescription("Check your console.");
+                                }
+
+                                antecedent.Result.Channel.SendMessageAsync(embed: embed.Build()).Wait();
                             }
                             else
                             {
-                                antecedent.Result.Channel.SendMessageAsync("Aborting.");
+                                antecedent.Result.Channel.SendMessageAsync(embed: new CustomEmbed()
+                                    .WithColor(Color.Blue)
+                                    .WithTitle("Reload aborted.")
+                                    .Build()).Wait();
                             }
+
+                            antecedent.Result.DeleteAsync();
                         }
                     });
 
