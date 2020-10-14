@@ -26,19 +26,17 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static PersonalStatsClass operator +(PersonalStatsClass personalStats, PersonalStatsClass incPersonalStats)
         {
-            personalStats.Happiness += incPersonalStats.Happiness;
-            personalStats.Happiness = CommonScript.Check0To100Range(personalStats.Happiness);
+            personalStats.Happiness = CommonScript.Check0To100Range(personalStats.Happiness += incPersonalStats.Happiness);
 
-            personalStats.Charisma += incPersonalStats.Charisma;
-            personalStats.Charisma = CommonScript.Check0To100Range(personalStats.Charisma);
+            personalStats.Charisma = CommonScript.Check0To100Range(personalStats.Charisma += incPersonalStats.Charisma);
 
             return personalStats;
         }
 
         public void IncValues(short incHappiness = 0, short incCharisma = 0)
         {
-            Happiness += incHappiness;
-            Charisma += incCharisma;
+            Happiness = CommonScript.Check0To100Range(Happiness += incHappiness);
+            Charisma = CommonScript.Check0To100Range(Charisma += incCharisma);
         }
     }
 }

@@ -34,17 +34,13 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static KingdomStatsClass operator +(KingdomStatsClass kingdomStats, KingdomStatsClass incKingdomStats)
         {
-            kingdomStats.Folks += incKingdomStats.Folks;
-            kingdomStats.Folks = CommonScript.Check0To100Range(kingdomStats.Folks);
+            kingdomStats.Folks = CommonScript.Check0To100Range(kingdomStats.Folks += incKingdomStats.Folks);
 
-            kingdomStats.Nobles += incKingdomStats.Nobles;
-            kingdomStats.Nobles = CommonScript.Check0To100Range(kingdomStats.Nobles);
+            kingdomStats.Nobles = CommonScript.Check0To100Range(kingdomStats.Nobles += incKingdomStats.Nobles);
 
-            kingdomStats.Wealth += incKingdomStats.Wealth;
-            kingdomStats.Wealth = CommonScript.Check0To100Range(kingdomStats.Wealth);
+            kingdomStats.Wealth = CommonScript.Check0To100Range(kingdomStats.Wealth += incKingdomStats.Wealth);
 
-            kingdomStats.Military += incKingdomStats.Military;
-            kingdomStats.Military = CommonScript.Check0To100Range(kingdomStats.Military);
+            kingdomStats.Military = CommonScript.Check0To100Range(kingdomStats.Military += incKingdomStats.Military);
 
             return kingdomStats;
         }
@@ -61,10 +57,10 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public void IncValues(short incFolks = 0, short incNobles = 0, short incMilitary = 0, short incWealth = 0)
         {
-            Folks += incFolks;
-            Nobles += incNobles;
-            Military += incMilitary;
-            Wealth += incWealth;
+            Folks = CommonScript.Check0To100Range(Folks += incFolks);
+            Nobles = CommonScript.Check0To100Range(Nobles += incNobles);
+            Military = CommonScript.Check0To100Range(Military += incMilitary);
+            Wealth = CommonScript.Check0To100Range(Wealth += incWealth);
         }
     }
 }
