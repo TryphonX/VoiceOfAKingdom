@@ -286,7 +286,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <param name="game"></param>
         /// <param name="request"></param>
         /// <returns>The new month embed.</returns>
-        public static Embed GetNewMonthEmbed(Game game,
+        public static Embed GetNewRequestEmbed(Game game,
             KingdomStatsClass kingdomStatsChanges = null,
             PersonalStatsClass personalStatsChanges = null)
         {
@@ -300,10 +300,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                 CommonScript.LogError("Empty kingdom/personal stats.");
             }
 
+            CommonScript.DebugLog($"game.Birthdate == {game.BirthDate}");
+
             // Base
             EmbedBuilder embed = new CustomEmbed()
                 .WithAuthor(new EmbedAuthorBuilder()
-                    .WithName($"Month {game.MonthsInControl+1} | {game.Date.ToLongDateString()}"))
+                    .WithName($"Month {game.MonthsInControl+1} | {game.Date.ToLongDateString()} | {game.Age}"))
                 .WithTitle($"\\{game.CurrentRequest.Person.Icon} {game.CurrentRequest.Person.Name}")
                 .WithThumbnailUrl(game.CurrentRequest.Person.ImgUrl)
                 .WithColor(game.CurrentRequest.Person.Color)
@@ -496,12 +498,11 @@ namespace VoiceOfAKingdomDiscord.Modules
             game.CurrentRequest = GetRandomRequest(game.RequestSource);
 
             // Add 1 to 5 months
-            for (int i = 0; i < CommonScript.Rng.Next(1, MAX_MONTHS_TO_PASS); i++)
-            {
-                AddMonthToDate(game);
-            }
+            AddMonthsToDate(game, CommonScript.Rng.Next(1, 5));
 
-            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewMonthEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
+            UpdateAge(game);
+
+            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewRequestEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
                 .ContinueWith(antecedent =>
                 {
                     // Block answers if you don't have the money for them
@@ -537,8 +538,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static bool HasGame(ulong userID) =>
             Games.Any(game => game.PlayerID == userID);
 
-        private static void AddMonthToDate(Game game)
+        private static void AddMonthsToDate(Game game, int monthsToAdd)
         {
+            // Adding months
+            game.Date = game.Date.AddMonths(monthsToAdd);
+            game.MonthsInControl += monthsToAdd;
+
+            // Randomizing day
             int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == game.Date.Month) ? 31 : 30;
 
             if (game.Date.Month == 2)
@@ -553,11 +559,17 @@ namespace VoiceOfAKingdomDiscord.Modules
                 }
             }
 
-            int minDays = monthDays - game.Date.Day + 1;
-            int maxDays = monthDays * 2 - game.Date.Day;
+            int minDays = -game.Date.Day + 1;
+            int maxDays = monthDays - game.Date.Day;
 
             game.Date = game.Date.AddDays(CommonScript.Rng.Next(minDays, maxDays));
-            game.MonthsInControl++;
+        }
+
+        public static void UpdateAge(Game game)
+        {
+            game.Age = game.Date.DayOfYear >= game.BirthDate.DayOfYear
+                ? (short)(game.Date.Year - game.BirthDate.Year)
+                : (short)(game.Date.Year - game.BirthDate.Year - 1);
         }
 
         /// <summary>

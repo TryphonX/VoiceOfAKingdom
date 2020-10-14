@@ -15,6 +15,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public ulong ChannelID { get; private set; }
         public DateTime Date { get; set; } = CommonScript.GetRandomDate();
         public int MonthsInControl { get; set; } = 0;
+        public DateTime BirthDate { get; } 
+        public short Age { get; set; }
         public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
         public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
         public Request CurrentRequest { get; set; }
@@ -27,6 +29,10 @@ namespace VoiceOfAKingdomDiscord.Modules
             {
                 PlayerID = cmdHandler.Msg.Author.Id;
                 RequestSource = requestSource;
+
+                BirthDate = GetRandomBirthDate(Date);
+
+                GameManager.UpdateAge(this);
 
                 SocketGuild cachedGuild = null;
                 ulong categoryID = 0;
@@ -66,7 +72,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                         new OverwritePermissions(sendMessages: PermValue.Allow, manageChannel: PermValue.Allow, viewChannel: PermValue.Allow));
 
                     CurrentRequest = GameManager.GetRandomRequest(RequestSource);
-                    antecedent.Result.SendMessageAsync(embed: GameManager.GetNewMonthEmbed(this))
+                    antecedent.Result.SendMessageAsync(embed: GameManager.GetNewRequestEmbed(this))
                         .ContinueWith(antecedent =>
                         {
                             antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
@@ -81,6 +87,37 @@ namespace VoiceOfAKingdomDiscord.Modules
                 CommonScript.LogError(e.Message);
                 throw;
             }
+        }
+
+        private static DateTime GetRandomBirthDate(DateTime date)
+        {
+            // remove 16-32 years
+            date = date.AddYears(-CommonScript.Rng.Next(16, 32));
+
+            // randomizing the month
+            int min = -date.Month + 1;
+            int max = 12 - date.Month;
+            date = date.AddMonths(CommonScript.Rng.Next(min, max));
+
+            // randomizing the day
+            min = -date.Day + 1;
+            max = CommonScript.MonthsWith31Days.Any(month => month == date.Month)
+                ? 31 - date.Day
+                : 30 - date.Day;
+
+            if (date.Month == 2)
+            {
+                if (date.Year % 4 == 0)
+                {
+                    max = 29 - date.Day;
+                }
+                else
+                {
+                    max = 28 - date.Day;
+                }
+            }
+
+            return date.AddDays(CommonScript.Rng.Next(min, max));
         }
     }
 }
