@@ -47,7 +47,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                     channel.GetMessageAsync(reaction.MessageId)
                     .ContinueWith(antecedent =>
                     {
-                        if (antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
+                        if (antecedent.Result != null &&
+                        antecedent.Result.Author.Id == App.Client.CurrentUser.Id &&
                         antecedent.Result.Embeds.Any(embed => Regex.IsMatch(embed.Title, @"Are you sure you want to reload all custom requests\?")))
                         {
                             antecedent.Result.RemoveAllReactionsAsync();
@@ -142,9 +143,15 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                     if (!invalidReaction)
                     {
-                        // Accepted or Rjected
+                        // Accepted or Rejected
                         if (!game.IsDead)
                         {
+                            if (!accepted && game.IsCaptured)
+                            {
+                                // Somehow reacted with a no to a jailed message.
+                                CommonScript.LogWarn($"Invalid reaction ({CommonScript.UnicodeReject}) for a finished game. Possibly wrong permissions.");
+                            }
+
                             InitResolveRequestAsync(channel, reaction, game, accepted);
                             return Task.CompletedTask;
                         }

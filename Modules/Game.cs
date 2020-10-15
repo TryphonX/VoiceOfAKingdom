@@ -22,6 +22,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public Request CurrentRequest { get; set; }
         public Request.Source RequestSource { get; }
         public bool IsDead { get; set; } = false;
+        public bool IsCaptured { get; set; } = false;
+        public int MonthsCaptured { get; set; } = 0;
 
         public Game(CommandHandler cmdHandler, Request.Source requestSource)
         {

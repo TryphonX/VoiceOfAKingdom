@@ -27,7 +27,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short MILITARY_THRESHOLD = 50;
         private const short FOLK_THRESHOLD = 50;
         private const short NOBLE_THRESHOLD = 50;
-        
+
         private const int PROGRESS_BAR_BOXES = 10;
 
         public static List<Game> Games { get; } = new List<Game>();
@@ -208,7 +208,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             try
             {
-                SetDead(game.PlayerID);
+                game.IsDead = true;
 
                 int yearsInCommand = game.MonthsInControl / 12;
                 int monthsInCommand = game.MonthsInControl % 12;
@@ -235,9 +235,6 @@ namespace VoiceOfAKingdomDiscord.Modules
                 CommonScript.LogError(e.Message);
             }
         }
-
-        private static void SetDead(ulong playerID) =>
-            Games.Find(listedGame => listedGame.PlayerID == playerID).IsDead = true;
 
         /// <summary>
         /// Returns if the game ended successfully.
@@ -464,13 +461,16 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static void ResolveRequest(Game game, bool accepted)
         {
-            KingdomStatsClass incKingdomStats = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-            PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+            if (!game.IsCaptured)
+            {
+                KingdomStatsClass incKingdomStats = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
+                PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
 
-            game.KingdomStats += incKingdomStats;
-            game.PersonalStats += incPersonalStats;
+                game.KingdomStats += incKingdomStats;
+                game.PersonalStats += incPersonalStats;
 
-            GetGameMessageChannel(game).SendMessageAsync(embed: GetResolveRequestEmbed(game, accepted)).Wait();
+                GetGameMessageChannel(game).SendMessageAsync(embed: GetResolveRequestEmbed(game, accepted)).Wait();
+            }
 
             if (CheckForBigEvents(game))
                 return;
@@ -491,25 +491,64 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static void Advance(Game game, bool accepted)
         {
-            KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-            PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
-            game.CurrentRequest = GetRandomRequest(game.RequestSource);
+            if (game.IsCaptured)
+            {
+                // Captured
+                AddYearsToDate(game, 1);
 
-            // Add 1 to 5 months
-            AddMonthsToDate(game, CommonScript.Rng.Next(1, 5));
+                game.PersonalStats.IncValues(incHappiness: -SMALL_CHANGE);
 
-            UpdateAge(game);
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkBlue)
+                    .WithAuthor(new EmbedAuthorBuilder()
+                        .WithName($"Months in prison: {game.MonthsCaptured} | {game.Date.ToLongDateString()} | {game.Age} Years old"))
+                    .WithTitle("Still captured.")
+                    .WithDescription("Yet another year in prison.")
+                    .AddField(new EmbedFieldBuilder()
+                        .WithName("🤔 Personal Info")
+                        .WithValue("=============================="))
+                    .AddField(new EmbedFieldBuilder()
+                        .WithIsInline(true)
+                        .WithName($"😄 Happiness: {game.PersonalStats.Happiness}" +
+                        $"{GetChangeEmoji(false, -SMALL_CHANGE)}")
+                        .WithValue(PrepareStatFieldValue(game.PersonalStats.Happiness)))
+                    .AddField(new EmbedFieldBuilder()
+                        .WithIsInline(true)
+                        .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}" +
+                        $"{GetChangeEmoji(false, 0)}")
+                        .WithValue(PrepareStatFieldValue(game.PersonalStats.Charisma)))
+                    .AddField(new EmbedFieldBuilder()
+                        .WithName("Pass another year in jail.")
+                        .WithValue("Use the reaction below to proceed to next year."))
+                    .WithThumbnailUrl(Image.Guards)
+                    .WithTimestamp(game.Date)
+                    .Build())
+                    .ContinueWith(antecedent =>
+                    {
+                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept));
+                    });
+            }
+            else
+            {
+                // Free
+                KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
+                PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+                game.CurrentRequest = GetRandomRequest(game.RequestSource);
 
-            GetGameMessageChannel(game).SendMessageAsync(embed: GetNewRequestEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
-                .ContinueWith(antecedent =>
-                {
-                    // Block answers if you don't have the money for them
-                    if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnAccept.Wealth)
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
-                    
-                    if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnReject.Wealth)
-                        antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject)).Wait();
-                });
+                // Add 1 to X months (5 at the time of addition)
+                AddMonthsToDate(game, CommonScript.Rng.Next(1, MAX_MONTHS_TO_PASS));
+
+                GetGameMessageChannel(game).SendMessageAsync(embed: GetNewRequestEmbed(game, cachedKingdomChanges, cachedPersonalChanges))
+                    .ContinueWith(antecedent =>
+                    {
+                        // Block answers if you don't have the money for them
+                        if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnAccept.Wealth)
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
+
+                        if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnReject.Wealth)
+                            antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject));
+                    });
+            }
         }
 
         public static Request GetRandomRequest(Request.Source source)
@@ -540,7 +579,15 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             // Adding months
             game.Date = game.Date.AddMonths(monthsToAdd);
-            game.MonthsInControl += monthsToAdd;
+            
+            if (game.IsCaptured)
+            {
+                game.MonthsCaptured += monthsToAdd;
+            }
+            else
+            {
+                game.MonthsInControl += monthsToAdd;
+            }
 
             // Randomizing day
             int monthDays = CommonScript.MonthsWith31Days.Any(monthNum => monthNum == game.Date.Month) ? 31 : 30;
@@ -561,6 +608,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             int maxDays = monthDays - game.Date.Day;
 
             game.Date = game.Date.AddDays(CommonScript.Rng.Next(minDays, maxDays));
+
+            UpdateAge(game);
         }
 
         public static void UpdateAge(Game game)
@@ -571,12 +620,18 @@ namespace VoiceOfAKingdomDiscord.Modules
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if you have to skip the next month.
+        /// Returns <see langword="true"/> if you're dying.
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
         private static bool CheckForBigEvents(Game game)
-        {            
+        {
+            // Breaking free
+            if (game.IsCaptured)
+            {
+                return PrisonEvent(game);
+            }
+
             // Coup
             if (game.KingdomStats.Military < 20)
             {
@@ -611,8 +666,50 @@ namespace VoiceOfAKingdomDiscord.Modules
             return false;
         }
 
+        private static bool PrisonEvent(Game game)
+        {
+            const short JAIL_BREAK_CHANCE = 20;
+            const short EXECUTION_CHANCE = 40;
+
+            if (CommonScript.Rng.Next(0, 100) < JAIL_BREAK_CHANCE)
+            {
+                // Breaking free
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.Green)
+                    .WithTitle("You managed to break free.")
+                    .WithDescription("Some of the inmates have been planning their jail break for some time now. " +
+                    $"On {game.Date.ToLongDateString()}, all the inmates start a riot. Guards and inmates dead left and right. " +
+                    "You are forced to get your hands dirty to save yourself and some of the inmates you bonded with over the years. " +
+                    "You manage to escape and, with the assist of the inmates, regain your position as King. The folks are quite happy " +
+                    "with your actions. The nobles appreciate their freedom and the part of the military that was in favor of the coup... " +
+                    "was dealt with.")
+                    .WithImageUrl(Image.RaisedFist)
+                    .Build()).Wait();
+
+                game.KingdomStats.IncValues(incFolks: MEDIUM_CHANGE, incNobles: SMALL_CHANGE, incMilitary: MEDIUM_CHANGE, incWealth: SMALL_CHANGE);
+                game.PersonalStats.IncValues(incHappiness: BIG_CHANGE, incCharisma: SMALL_CHANGE);
+
+                return false;
+            }
+            else if (CommonScript.Rng.Next(0, 100) < Math.Abs(EXECUTION_CHANCE - 10 * game.MonthsCaptured))
+            {
+                // Death
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkRed)
+                    .WithTitle("The military decided to execute you.")
+                    .WithDescription("You were executed. Your body was fed to the military's dogs.")
+                    .WithImageUrl(Image.ThrownHelmet)
+                    .Build()).Wait();
+
+                SendEndGameMsg(game);
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
-        /// Returns <see langword="true"/> if you have to skip the next month.
+        /// Returns <see langword="true"/> if you're dying.
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
@@ -643,14 +740,26 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.PointingSword)
                     .Build()).Wait();
 
-                // TODO: Maybe in the future pass years captured then break free
-                SendEndGameMsg(game);
-                return true;
+                game.IsCaptured = true;
+                game.MonthsCaptured = 0;
+
+                return false;
             }
         }
 
+        private static void AddYearsToDate(Game game, int yearsToAdd)
+        {
+            // 1 year - current month (Janurary of next year)
+            // 2 years - current month (December of next year)
+            int min = yearsToAdd*12 - game.Date.Month;
+            int max = yearsToAdd*12 + 12 - game.Date.Month;
+
+            // Use this function to make sure we're consistent
+            AddMonthsToDate(game, CommonScript.Rng.Next(min, max));
+        }
+
         /// <summary>
-        /// Returns whether to skip next month or not.
+        /// Returns whether you're dying or not.
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
