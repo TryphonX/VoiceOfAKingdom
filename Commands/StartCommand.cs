@@ -17,7 +17,7 @@ namespace VoiceOfAKingdomDiscord.Commands
             Abbreviations.Add(Name);
             Abbreviations.Add("play");
             Description = "Starts a new game.";
-            Parameters.Add("requests source",
+            Parameters.Add("source",
                 "The source of your game's requests.\n" +
                 "-c(ustom): custom.\n" +
                 "-m(ixed): default and custom.");

@@ -25,8 +25,9 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static void Log(string msg)
         {
-            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.Blue;
             PrintLine($"App\t     {msg}");
+            Console.ResetColor();
         }
 
         public static void LogWarn(string msg)
