@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.WebSocket;
 using System;
 using System.Collections.Generic;
@@ -34,13 +34,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short FOLKS_THRESHOLD = 20;
         private const short NOBLES_THRESHOLD = 20;
 
-        private const short HAPPINESS_THRESHOLD = 20;
+        private const short HAPPINESS_THRESHOLD = 30;
 
         // EVENT CHANCES
         private const short COUP_CHANCE = 50;
         private const short REVOLUTION_CHANCE = 50;
         private const short ASSASSINATION_CHANCE = 50;
-        private const short SUICIDE_CHANCE = 25;
+        private const short SUICIDE_CHANCE = 10;
 
         public static List<Game> Games { get; } = new List<Game>();
         public static List<Request> DefaultRequests { get; } = new List<Request>();
@@ -641,17 +641,21 @@ namespace VoiceOfAKingdomDiscord.Modules
         private static bool CheckForEvents(Game game)
         {
             bool died = false;
+            
             // Birthday
             if (game.Date.Month == game.BirthDate.Month)
             {
                 BirthdayEvent(game);
             }
 
+            // Depression
             if (game.PersonalStats.Happiness < HAPPINESS_THRESHOLD)
             {
                 died = DepressionEvent(game);
             }
 
+            // Small check for depression event
+            // Maybe other event too in the future
             if (died)
             {
                 return true;
@@ -671,16 +675,14 @@ namespace VoiceOfAKingdomDiscord.Modules
                     return CoupStaged(game);
                 }
             }
-            
-            if (game.KingdomStats.Folks < FOLKS_THRESHOLD)
+            else if (game.KingdomStats.Folks < FOLKS_THRESHOLD)
             {
                 if (CommonScript.Rng.Next(0, 100) < REVOLUTION_CHANCE)
                 {
                     return RevolutionStarted(game);
                 }
             }
-            
-            if (game.KingdomStats.Nobles < NOBLES_THRESHOLD)
+            else if (game.KingdomStats.Nobles < NOBLES_THRESHOLD)
             {
                 if (CommonScript.Rng.Next(0, 100) < ASSASSINATION_CHANCE)
                 {
@@ -688,8 +690,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 }
 
             }
-            
-            if (game.KingdomStats.Wealth == 0)
+            else if (game.KingdomStats.Wealth == 0)
             {
                 return ReachedBankruptcy(game);
             }
@@ -699,7 +700,11 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static bool DepressionEvent(Game game)
         {
-            bool suicided = CommonScript.Rng.Next(0, 100) < SUICIDE_CHANCE;
+            // The chance to suicide becomes bigger the lower the happiness is.
+            // SUICIDE_CHANCE == 10
+            // Happines == 30, actual suicide chance is 0
+            // Happiness == 0, actual suicide chance is 30
+            bool suicided = CommonScript.Rng.Next(0, 100) < SUICIDE_CHANCE * (3 - CommonScript.RoundToX(game.PersonalStats.Happiness) / 10);
 
             if (!suicided)
             {
