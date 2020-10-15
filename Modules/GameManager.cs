@@ -11,24 +11,33 @@ namespace VoiceOfAKingdomDiscord.Modules
 {
     static class GameManager
     {
+        // PATHS
         private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
         private const string CUSTOM_REQUESTS_PATH = "./CustomRequests.xml";
 
+        // GAMEPLAY
         private const int MAX_MONTHS_TO_PASS = 5;
 
+        // EMBED
         private const string UP_ARROW_SMALL = "\\🔼";
         private const string DOWN_ARROW_SMALL = "\\🔻";
         private const string STEADY_ICON = "\\➖";
-        
+        private const int PROGRESS_BAR_BOXES = 10;
+
+        // PROBABLY REMOVED SOON
         private const short SMALL_CHANGE = 3;
         private const short MEDIUM_CHANGE = 7;
         private const short BIG_CHANGE = 18;
-        
-        private const short MILITARY_THRESHOLD = 50;
-        private const short FOLK_THRESHOLD = 50;
-        private const short NOBLE_THRESHOLD = 50;
 
-        private const int PROGRESS_BAR_BOXES = 10;
+        // THRESHOLDS
+        private const short MILITARY_THRESHOLD = 20;
+        private const short FOLKS_THRESHOLD = 20;
+        private const short NOBLES_THRESHOLD = 20;
+
+        // EVENT CHANCES
+        private const short COUP_CHANCE = 50;
+        private const short REVOLUTION_CHANCE = 50;
+        private const short ASSASSINATION_CHANCE = 50;
 
         public static List<Game> Games { get; } = new List<Game>();
         public static List<Request> DefaultRequests { get; } = new List<Request>();
@@ -633,25 +642,25 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             // Coup
-            if (game.KingdomStats.Military < 20)
+            if (game.KingdomStats.Military < MILITARY_THRESHOLD)
             {
-                if (CommonScript.Rng.Next(0, 100) < MILITARY_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < COUP_CHANCE)
                 {
                     return CoupStaged(game);
                 }
             }
             
-            if (game.KingdomStats.Folks < 20)
+            if (game.KingdomStats.Folks < FOLKS_THRESHOLD)
             {
-                if (CommonScript.Rng.Next(0, 100) < FOLK_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < REVOLUTION_CHANCE)
                 {
                     return RevolutionStarted(game);
                 }
             }
             
-            if (game.KingdomStats.Nobles < 20)
+            if (game.KingdomStats.Nobles < NOBLES_THRESHOLD)
             {
-                if (CommonScript.Rng.Next(0, 100) < NOBLE_THRESHOLD)
+                if (CommonScript.Rng.Next(0, 100) < ASSASSINATION_CHANCE)
                 {
                     return AssassinationAttempted(game);
                 }
