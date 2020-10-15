@@ -34,10 +34,13 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short FOLKS_THRESHOLD = 20;
         private const short NOBLES_THRESHOLD = 20;
 
+        private const short HAPPINESS_THRESHOLD = 20;
+
         // EVENT CHANCES
         private const short COUP_CHANCE = 50;
         private const short REVOLUTION_CHANCE = 50;
         private const short ASSASSINATION_CHANCE = 50;
+        private const short SUICIDE_CHANCE = 25;
 
         public static List<Game> Games { get; } = new List<Game>();
         public static List<Request> DefaultRequests { get; } = new List<Request>();
@@ -483,7 +486,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 GetGameMessageChannel(game).SendMessageAsync(embed: GetResolveRequestEmbed(game, accepted)).Wait();
             }
 
-            if (CheckForBigEvents(game))
+            if (CheckForEvents(game))
                 return;
 
             Advance(game, accepted);
@@ -635,12 +638,23 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// </summary>
         /// <param name="game"></param>
         /// <returns></returns>
-        private static bool CheckForBigEvents(Game game)
+        private static bool CheckForEvents(Game game)
         {
+            bool died = false;
             // Birthday
             if (game.Date.Month == game.BirthDate.Month)
             {
-                return BirthdayEvent(game);
+                BirthdayEvent(game);
+            }
+
+            if (game.PersonalStats.Happiness < HAPPINESS_THRESHOLD)
+            {
+                died = DepressionEvent(game);
+            }
+
+            if (died)
+            {
+                return true;
             }
 
             // Breaking free
@@ -683,7 +697,52 @@ namespace VoiceOfAKingdomDiscord.Modules
             return false;
         }
 
-        private static bool BirthdayEvent(Game game)
+        private static bool DepressionEvent(Game game)
+        {
+            bool suicided = CommonScript.Rng.Next(0, 100) < SUICIDE_CHANCE;
+
+            if (!suicided)
+            {
+                // Not dying
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkBlue)
+                    .WithTitle("You are depressed.")
+                    .WithDescription("Recent events have really brought you down. You might want to look into this " +
+                    "before it becomes an even more serious issue.")
+                    .WithImageUrl(Image.WarriorSide)
+                    .Build()).Wait();
+            }
+            else
+            {
+                // Dying
+                if (game.IsCaptured)
+                {
+                    GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                        .WithColor(Color.DarkBlue)
+                        .WithTitle("It was too much.")
+                        .WithDescription($"{game.MonthsCaptured / 12} years and {game.MonthsCaptured % 12} in prison really took a toll on you... " +
+                        "You couldn't sleep at night. You kept getting flashbacks of the day the military staged that coup and living " +
+                        "in a prison cell did not help alleviate the pain you felt. You just couldn't handle it anymore. " +
+                        "You hung yourself in your prison cell.")
+                        .WithImageUrl(Image.TiedLegs)
+                        .Build()).Wait();
+                }
+                else
+                {
+                    GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                        .WithColor(Color.DarkBlue)
+                        .WithTitle("It was too much.")
+                        .WithDescription("Recent events had really brought you down... You decided to take the easy way out and hang yourself.")
+                        .WithImageUrl(Image.TiedLegs)
+                        .Build()).Wait();
+                }
+
+                SendEndGameMsg(game);
+            }
+            return suicided;
+        }
+
+        private static void BirthdayEvent(Game game)
         {
             if (game.IsCaptured)
             {
@@ -696,14 +755,12 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 game.PersonalStats.Inc(happiness: -BIG_CHANGE);
-
-                return false;
             }
             else
             {
+                // Celebrating
                 StringBuilder sb = new StringBuilder("It's your birthday again. As always, you decide to make a huge, fancy event to celebrate it. ");
 
-                // Empty
                 KingdomStats incKingdomStats = new KingdomStats(nobles: SMALL_CHANGE, wealth: -SMALL_CHANGE);
                 bool isEventRuined = false;
 
@@ -742,8 +799,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 game.PersonalStats.Inc(happiness: +SMALL_CHANGE);
                 game.KingdomStats += incKingdomStats;
-
-                return false;
             }
         }
 

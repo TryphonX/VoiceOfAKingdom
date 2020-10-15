@@ -22,5 +22,6 @@ namespace VoiceOfAKingdomDiscord.Modules
         public static string WolfShield => "https://i.imgur.com/Hy4g7r6.png";
         public static string Guards => "https://i.imgur.com/yBoo7Fb.png";
         public static string PersonShouting => "https://i.imgur.com/xkIXarT.png";
+        public static string TiedLegs => "https://i.imgur.com/Hbr3QFL.png";
     }
 }
