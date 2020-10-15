@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VoiceOfAKingdomDiscord.Modules
 {
-    class KingdomStatsClass
+    class KingdomStats
     {
         [Range(0, 100)]
         public short Folks { get; set; }
@@ -16,7 +16,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         [Range(0, 100)]
         public short Wealth { get; set; }
 
-        public KingdomStatsClass()
+        public KingdomStats()
         {
             Folks = (short)CommonScript.Rng.Next(40, 60);
             Wealth = (short)CommonScript.Rng.Next(40, 60);
@@ -24,7 +24,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             Military = (short)CommonScript.Rng.Next(40, 60);
         }
 
-        public KingdomStatsClass(short folks = 0, short nobles = 0, short military = 0, short wealth = 0)
+        public KingdomStats(short folks = 0, short nobles = 0, short military = 0, short wealth = 0)
         {
             Folks = folks;
             Nobles = nobles;
@@ -32,7 +32,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             Wealth = wealth;
         }
 
-        public static KingdomStatsClass operator +(KingdomStatsClass kingdomStats, KingdomStatsClass incKingdomStats)
+        public static KingdomStats operator +(KingdomStats kingdomStats, KingdomStats incKingdomStats)
         {
             kingdomStats.Folks = CommonScript.Check0To100Range(kingdomStats.Folks += incKingdomStats.Folks);
 
@@ -55,12 +55,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             Military = (short)Math.Abs(40 - Military);
         }
 
-        public void IncValues(short incFolks = 0, short incNobles = 0, short incMilitary = 0, short incWealth = 0)
+        public void Inc(short folks = 0, short nobles = 0, short military = 0, short wealth = 0)
         {
-            Folks = CommonScript.Check0To100Range(Folks += incFolks);
-            Nobles = CommonScript.Check0To100Range(Nobles += incNobles);
-            Military = CommonScript.Check0To100Range(Military += incMilitary);
-            Wealth = CommonScript.Check0To100Range(Wealth += incWealth);
+            Folks = CommonScript.Check0To100Range(Folks += folks);
+            Nobles = CommonScript.Check0To100Range(Nobles += nobles);
+            Military = CommonScript.Check0To100Range(Military += military);
+            Wealth = CommonScript.Check0To100Range(Wealth += wealth);
         }
     }
 }

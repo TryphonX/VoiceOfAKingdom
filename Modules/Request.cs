@@ -8,18 +8,18 @@ namespace VoiceOfAKingdomDiscord.Modules
     {
         public string Question { get; }
         public Person Person { get; }
-        public KingdomStatsClass KingdomStatsOnAccept { get; }
-        public KingdomStatsClass KingdomStatsOnReject { get; }
-        public PersonalStatsClass PersonalStatsOnAccept { get; }
-        public PersonalStatsClass PersonalStatsOnReject { get; }
+        public KingdomStats KingdomStatsOnAccept { get; }
+        public KingdomStats KingdomStatsOnReject { get; }
+        public PersonalStats PersonalStatsOnAccept { get; }
+        public PersonalStats PersonalStatsOnReject { get; }
         public string ResponseOnAccepted { get; }
         public string ResponseOnRejected { get; }
 
         public Request(string question, Person person,
-            KingdomStatsClass kingdomStatsOnAccept,
-            PersonalStatsClass personalStatsOnAccept,
-            KingdomStatsClass kingdomStatsOnReject,
-            PersonalStatsClass personalStatsOnReject,
+            KingdomStats kingdomStatsOnAccept,
+            PersonalStats personalStatsOnAccept,
+            KingdomStats kingdomStatsOnReject,
+            PersonalStats personalStatsOnReject,
             string responseOnAccepted,
             string responseOnRejected)
         {

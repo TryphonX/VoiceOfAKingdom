@@ -131,8 +131,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 hap = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Happiness]);
                 charisma = ParseValue(requestNode[XmlNodeEnum.Accept].Attributes[XmlAttributeEnum.Charisma]);
 
-                KingdomStatsClass kingdomStatsOnAccept = new KingdomStatsClass(folk, noble, mil, wealth);
-                PersonalStatsClass personalStatsOnAccept = new PersonalStatsClass(hap, charisma);
+                KingdomStats kingdomStatsOnAccept = new KingdomStats(folk, noble, mil, wealth);
+                PersonalStats personalStatsOnAccept = new PersonalStats(hap, charisma);
 
                 responseOnAccepted = requestNode[XmlNodeEnum.Accept].InnerText;
                 #endregion
@@ -145,8 +145,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 hap = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Happiness]);
                 charisma = ParseValue(requestNode[XmlNodeEnum.Reject].Attributes[XmlAttributeEnum.Charisma]);
 
-                KingdomStatsClass kingdomStatsOnReject = new KingdomStatsClass(folk, noble, mil, wealth);
-                PersonalStatsClass personalStatsOnReject = new PersonalStatsClass(hap, charisma);
+                KingdomStats kingdomStatsOnReject = new KingdomStats(folk, noble, mil, wealth);
+                PersonalStats personalStatsOnReject = new PersonalStats(hap, charisma);
 
                 responseOnRejected = requestNode[XmlNodeEnum.Reject].InnerText;
                 #endregion
@@ -293,8 +293,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <param name="request"></param>
         /// <returns>The new month embed.</returns>
         public static Embed GetNewRequestEmbed(Game game,
-            KingdomStatsClass kingdomStatsChanges = null,
-            PersonalStatsClass personalStatsChanges = null)
+            KingdomStats kingdomStatsChanges = null,
+            PersonalStats personalStatsChanges = null)
         {
             bool isFirstMonth = game.MonthsInControl == 0;
 
@@ -472,8 +472,10 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             if (!game.IsCaptured)
             {
-                KingdomStatsClass incKingdomStats = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-                PersonalStatsClass incPersonalStats = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+                KingdomStats incKingdomStats = accepted
+                    ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
+                PersonalStats incPersonalStats = accepted
+                    ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
 
                 game.KingdomStats += incKingdomStats;
                 game.PersonalStats += incPersonalStats;
@@ -505,7 +507,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 // Captured
                 AddYearsToDate(game, 1);
 
-                game.PersonalStats.IncValues(incHappiness: -SMALL_CHANGE);
+                game.PersonalStats.Inc(happiness: -SMALL_CHANGE);
 
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
                     .WithColor(Color.DarkBlue)
@@ -540,8 +542,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             else
             {
                 // Free
-                KingdomStatsClass cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
-                PersonalStatsClass cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
+                KingdomStats cachedKingdomChanges = accepted ? game.CurrentRequest.KingdomStatsOnAccept : game.CurrentRequest.KingdomStatsOnReject;
+                PersonalStats cachedPersonalChanges = accepted ? game.CurrentRequest.PersonalStatsOnAccept : game.CurrentRequest.PersonalStatsOnReject;
                 game.CurrentRequest = GetRandomRequest(game.RequestSource);
 
                 // Add 1 to X months (5 at the time of addition)
@@ -635,6 +637,12 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         private static bool CheckForBigEvents(Game game)
         {
+            // Birthday
+            if (game.Date.Month == game.BirthDate.Month)
+            {
+                return BirthdayEvent(game);
+            }
+
             // Breaking free
             if (game.IsCaptured)
             {
@@ -675,6 +683,70 @@ namespace VoiceOfAKingdomDiscord.Modules
             return false;
         }
 
+        private static bool BirthdayEvent(Game game)
+        {
+            if (game.IsCaptured)
+            {
+                // Don't get to celebrate
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(Color.DarkBlue)
+                    .WithTitle("Just like I wanted it.")
+                    .WithDescription("Looks like you'll be celebrating your birthday with your cell's rats.")
+                    .WithImageUrl(Image.WarriorSide)
+                    .Build()).Wait();
+
+                game.PersonalStats.Inc(happiness: -BIG_CHANGE);
+
+                return false;
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder("It's your birthday again. As always, you decide to make a huge, fancy event to celebrate it. ");
+
+                // Empty
+                KingdomStats incKingdomStats = new KingdomStats(nobles: SMALL_CHANGE, wealth: -SMALL_CHANGE);
+                bool isEventRuined = false;
+
+                if (game.KingdomStats.Wealth < 30)
+                {
+                    incKingdomStats.Folks = -MEDIUM_CHANGE;
+                    incKingdomStats.Military = -SMALL_CHANGE;
+                    sb.Append($"{Person.General.Name} informs you that he and a few of his men " +
+                        "are disappointed with how you've chosen to use the Kingdom's money at a time like this. " +
+                        "The event ends too soon, after a big group of folks gathers to protest for the \"Waste of the Kingdom's money\" " +
+                        "during a \"crisis\". In retrospect, maybe you should've held back on the money spending a bit. " +
+                        "You end up with a ruined party.");
+
+                    game.PersonalStats.Inc(happiness: -MEDIUM_CHANGE);
+                    isEventRuined = true;
+                }
+                else if (game.KingdomStats.Folks >= 50)
+                {
+                    incKingdomStats.Folks = SMALL_CHANGE;
+                    sb.Append("Everyone enjoyed their time celebrating your birthday.");
+                }
+                else
+                {
+                    incKingdomStats.Folks = -SMALL_CHANGE;
+                    sb.Append("Given that Folks already disliked you, they're not happy you spent money on an event like this. " +
+                        "However, it doesn't really bother you.");
+                }
+
+                // Celebrating
+                GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                    .WithColor(isEventRuined ? Color.DarkBlue : Color.Green)
+                    .WithTitle(isEventRuined ? "We'll try again next year." : "Birthday time!")
+                    .WithDescription(sb.ToString())
+                    .WithImageUrl(isEventRuined ? Image.PersonShouting : Image.WolfShield)
+                    .Build()).Wait();
+
+                game.PersonalStats.Inc(happiness: +SMALL_CHANGE);
+                game.KingdomStats += incKingdomStats;
+
+                return false;
+            }
+        }
+
         private static bool PrisonEvent(Game game)
         {
             const short JAIL_BREAK_CHANCE = 20;
@@ -695,8 +767,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.RaisedFist)
                     .Build()).Wait();
 
-                game.KingdomStats.IncValues(incFolks: MEDIUM_CHANGE, incNobles: SMALL_CHANGE, incMilitary: MEDIUM_CHANGE, incWealth: SMALL_CHANGE);
-                game.PersonalStats.IncValues(incHappiness: BIG_CHANGE, incCharisma: SMALL_CHANGE);
+                game.KingdomStats.Inc(folks: MEDIUM_CHANGE, nobles: SMALL_CHANGE, military: MEDIUM_CHANGE, wealth: SMALL_CHANGE);
+                game.PersonalStats.Inc(happiness: BIG_CHANGE, charisma: SMALL_CHANGE);
 
                 return false;
             }
@@ -849,9 +921,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
-                    .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                    .Inc(folks: SMALL_CHANGE, nobles: MEDIUM_CHANGE);
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats.
-                    IncValues(incHappiness: SMALL_CHANGE);
+                    Inc(happiness: SMALL_CHANGE);
                 return false;
             }
             else if (CommonScript.Rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
@@ -871,9 +943,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
-                    .IncValues(incFolks: SMALL_CHANGE, incNobles: MEDIUM_CHANGE);
+                    .Inc(folks: SMALL_CHANGE, nobles: MEDIUM_CHANGE);
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
-                    .IncValues(incHappiness: -MEDIUM_CHANGE);
+                    .Inc(happiness: -MEDIUM_CHANGE);
                 return false;
             }
             else
@@ -910,10 +982,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .Build()).Wait();
 
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).KingdomStats
-                    .IncValues(incFolks: -SMALL_CHANGE, incMilitary: -SMALL_CHANGE, incWealth: BIG_CHANGE);
+                    .Inc(folks: -SMALL_CHANGE, military: -SMALL_CHANGE, wealth: BIG_CHANGE);
 
                 Games.Find(listedGame => listedGame.PlayerID == game.PlayerID).PersonalStats
-                    .IncValues(incHappiness: BIG_CHANGE, incCharisma: SMALL_CHANGE);
+                    .Inc(happiness: BIG_CHANGE, charisma: SMALL_CHANGE);
                 return false;
             }
             else

@@ -17,8 +17,8 @@ namespace VoiceOfAKingdomDiscord.Modules
         public int MonthsInControl { get; set; } = 0;
         public DateTime BirthDate { get; } 
         public short Age { get; set; }
-        public KingdomStatsClass KingdomStats { get; set; } = new KingdomStatsClass();
-        public PersonalStatsClass PersonalStats { get; set; } = new PersonalStatsClass();
+        public KingdomStats KingdomStats { get; set; } = new KingdomStats();
+        public PersonalStats PersonalStats { get; set; } = new PersonalStats();
         public Request CurrentRequest { get; set; }
         public Request.Source RequestSource { get; }
         public bool IsDead { get; set; } = false;
