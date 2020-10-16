@@ -32,7 +32,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                 "military" => General,
                 "folk" => Folk,
                 "noble" => Noble,
-                _ => General,
+                _ => General
             };
             return person;
         }
