@@ -159,14 +159,16 @@ namespace VoiceOfAKingdomDiscord.Modules
                     DefaultRequests.Add(new Request(question, Person.Parse(type),
                         kingdomStatsOnAccept, personalStatsOnAccept,
                         kingdomStatsOnReject, personalStatsOnReject,
-                        responseOnAccepted, responseOnRejected));
+                        responseOnAccepted, responseOnRejected,
+                        DefaultRequests.Count, Request.Source.Default));
                 }
                 else
                 {
                     CustomRequests.Add(new Request(question, Person.Parse(type),
                         kingdomStatsOnAccept, personalStatsOnAccept,
                         kingdomStatsOnReject, personalStatsOnReject,
-                        responseOnAccepted, responseOnRejected));
+                        responseOnAccepted, responseOnRejected,
+                        CustomRequests.Count, Request.Source.Custom));
                 }
             }
         }
@@ -213,6 +215,71 @@ namespace VoiceOfAKingdomDiscord.Modules
             else
             {
                 return false;
+            }
+        }
+
+        public static bool Save(Game game)
+        {
+            if (game.IsDead)
+            {
+                return false;
+            }
+
+            try
+            {
+                XmlDocument doc = new XmlDocument();
+
+                // Doc Element
+                XmlElement root = doc.CreateElement("Game");
+                doc.AppendChild(root);
+
+                doc.InsertBefore(doc.CreateXmlDeclaration("1.0", "UTF-8", null), root);
+
+                foreach (var property in game.GetType().GetProperties())
+                {
+                    // Skip these
+                    if (property.Name.Equals("ChannelID") ||
+                        property.Name.Equals("IsDead") ||
+                        property.Name.Equals("Age") ||
+                        property.Name.Equals("PlayerID"))
+                        continue;
+
+                    XmlElement element = doc.CreateElement(property.Name);
+
+                    element.AppendChild(doc.CreateTextNode(property.GetValue(game).ToString()));
+
+                    root.AppendChild(element);
+                }
+
+                if (!Directory.Exists("./saves"))
+                {
+                    Directory.CreateDirectory("./saves");
+                }
+
+                doc.Save($"./saves/{game.PlayerID}.xml");
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                return false;
+            }
+        }
+
+        public static void Load(CommandHandler cmdHandler)
+        {
+            if (File.Exists($"./saves/{cmdHandler.Msg.Author.Id}.xml"))
+            {
+                // load
+                XmlDocument doc = new XmlDocument();
+                doc.Load($"./saves/{cmdHandler.Msg.Author.Id}.xml");
+
+                Games.Add(Game.Parse(doc.DocumentElement, cmdHandler));
+            }
+            else
+            {
+                cmdHandler.Msg.Channel.SendMessageAsync("You have no save.");
             }
         }
 
@@ -556,10 +623,10 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .ContinueWith(antecedent =>
                     {
                         // Block answers if you don't have the money for them
-                        if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnAccept.Wealth)
+                        if (game.KingdomStats.Wealth + game.CurrentRequest.KingdomStatsOnAccept.Wealth >= 0)
                             antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeAccept)).Wait();
 
-                        if (game.KingdomStats.Wealth >= game.CurrentRequest.KingdomStatsOnReject.Wealth)
+                        if (game.KingdomStats.Wealth + game.CurrentRequest.KingdomStatsOnReject.Wealth >= 0)
                             antecedent.Result.AddReactionAsync(new Emoji(CommonScript.UnicodeReject));
                     });
             }

@@ -19,7 +19,9 @@ namespace VoiceOfAKingdomDiscord.Modules
                 new HelpCommand(),
                 new StartCommand(),
                 new EndCommand(),
-                new ReloadCommand()
+                new ReloadCommand(),
+                new SaveCommand(),
+                new LoadCommand()
             };
 
         public void Run(SocketMessage msg)

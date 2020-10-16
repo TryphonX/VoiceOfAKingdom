@@ -41,7 +41,7 @@ namespace VoiceOfAKingdomDiscord
             {
                 foreach (var game in GameManager.Games)
                 {
-                    // TODO: Save before ending
+                    GameManager.Save(game);
                     GameManager.EndGame(game);
                 }
             }

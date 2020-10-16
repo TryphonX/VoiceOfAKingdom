@@ -38,5 +38,24 @@ namespace VoiceOfAKingdomDiscord.Modules
             Happiness = CommonScript.Check0To100Range(Happiness += happiness);
             Charisma = CommonScript.Check0To100Range(Charisma += charisma);
         }
+
+        public override string ToString()
+        {
+            return $"{Happiness} {Charisma}";
+        }
+
+        public static PersonalStats Parse(string s)
+        {
+            try
+            {
+                string[] values = s.Split(' ');
+                return new PersonalStats(short.Parse(values[0]), short.Parse(values[1]));
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                throw;
+            }
+        }
     }
 }

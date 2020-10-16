@@ -62,5 +62,24 @@ namespace VoiceOfAKingdomDiscord.Modules
             Military = CommonScript.Check0To100Range(Military += military);
             Wealth = CommonScript.Check0To100Range(Wealth += wealth);
         }
+
+        public override string ToString()
+        {
+            return $"{Folks} {Nobles} {Military} {Wealth}";
+        }
+
+        public static KingdomStats Parse(string s)
+        {
+            try
+            {
+                string[] values = s.Split(' ');
+                return new KingdomStats(short.Parse(values[0]), short.Parse(values[1]), short.Parse(values[2]), short.Parse(values[3]));
+            }
+            catch (Exception e)
+            {
+                CommonScript.LogError(e.Message);
+                throw;
+            }
+        }
     }
 }
