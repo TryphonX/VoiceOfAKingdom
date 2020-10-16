@@ -41,6 +41,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short REVOLUTION_CHANCE = 50;
         private const short ASSASSINATION_CHANCE = 50;
         private const short SUICIDE_CHANCE = 10;
+        private const short DEPRESSION_CHANCE = 40;
 
         public static List<Game> Games { get; } = new List<Game>();
         public static List<Request> DefaultRequests { get; } = new List<Request>();
@@ -784,7 +785,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.WarriorSide)
                     .Build()).Wait();
             }
-            else
+            else if (CommonScript.Rng.Next(0, 100) < DEPRESSION_CHANCE)
             {
                 // Dying
                 if (game.IsCaptured)
@@ -811,6 +812,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 SendEndGameMsg(game);
             }
+
             return suicided;
         }
 
