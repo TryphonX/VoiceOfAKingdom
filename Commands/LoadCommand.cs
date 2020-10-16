@@ -18,6 +18,11 @@ namespace VoiceOfAKingdomDiscord.Commands
         {
             base.Run(cmdHandler);
 
+            if (GameManager.HasGame(cmdHandler.Msg.Author.Id))
+            {
+                cmdHandler.Msg.Channel.SendMessageAsync("You already have a running game.");
+            }
+
             GameManager.Load(cmdHandler);
         }
     }
