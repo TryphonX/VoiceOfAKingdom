@@ -27,24 +27,13 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static Person Parse(string type)
         {
-            Person person;
-
-            switch (type)
+            Person person = type switch
             {
-                case "military":
-                    person = General;
-                    break;
-                case "folk":
-                    person = Folk;
-                    break;
-                case "noble":
-                    person = Noble;
-                    break;
-                default:
-                    person = General;
-                    break;
-            }
-
+                "military" => General,
+                "folk" => Folk,
+                "noble" => Noble,
+                _ => General,
+            };
             return person;
         }
     }
