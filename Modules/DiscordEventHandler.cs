@@ -19,6 +19,13 @@ namespace VoiceOfAKingdomDiscord.Modules
             App.Client.ReactionAdded += CheckForReload;
             App.Client.LatencyUpdated += OnLatencyUpdated;
             App.Client.Disconnected += OnDisconnected;
+            App.Client.Ready += OnReady;
+        }
+
+        private static Task OnReady()
+        {
+            App.Client.SetGameAsync($"Voice of a Kingdom v{CommonScript.Version}");
+            return Task.CompletedTask;
         }
 
         /// <summary>
