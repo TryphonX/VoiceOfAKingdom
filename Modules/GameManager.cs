@@ -267,7 +267,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
         }
 
-        public static void Load(CommandHandler cmdHandler)
+        public static async void Load(CommandHandler cmdHandler)
         {
             if (File.Exists($"./saves/{cmdHandler.Msg.Author.Id}.xml"))
             {
@@ -279,7 +279,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
             else
             {
-                cmdHandler.Msg.Channel.SendMessageAsync("You have no save.");
+                await cmdHandler.Msg.Channel.SendMessageAsync("You have no save.");
             }
         }
 
