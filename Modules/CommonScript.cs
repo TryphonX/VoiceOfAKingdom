@@ -100,5 +100,8 @@ namespace VoiceOfAKingdomDiscord.Modules
 
             return stat;
         }
+
+        public static short GetRandomPercentage() =>
+            (short)Rng.Next(0, 99);
     }
 }

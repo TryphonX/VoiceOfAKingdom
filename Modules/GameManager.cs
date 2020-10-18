@@ -368,14 +368,14 @@ namespace VoiceOfAKingdomDiscord.Modules
             KingdomStats kingdomStatsChanges = null,
             PersonalStats personalStatsChanges = null)
         {
-            bool isFirstMonth = game.MonthsInControl == 0;
+            bool isFirstMonthOrLoaded = game.MonthsInControl == 0;
 
-            // Check for mistakes
-            if (!isFirstMonth &&
+            // Check for load
+            if (!isFirstMonthOrLoaded &&
                 (kingdomStatsChanges == null ||
                 personalStatsChanges == null))
             {
-                CommonScript.LogError("Empty kingdom/personal stats.");
+                isFirstMonthOrLoaded = true;
             }
 
             // Base
@@ -422,7 +422,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"{Person.Folk.Icon} Folks: {game.KingdomStats.Folks}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Folks : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? kingdomStatsChanges.Folks : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Folks)));
             #endregion
 
@@ -430,7 +430,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"{Person.Noble.Icon} Nobles: {game.KingdomStats.Nobles}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Nobles : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? kingdomStatsChanges.Nobles : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Nobles)));
             #endregion
 
@@ -440,7 +440,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"{Person.General.Icon} Military: {game.KingdomStats.Military}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Military : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? kingdomStatsChanges.Military : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Military)));
             #endregion
 
@@ -448,7 +448,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($":coin: Wealth: {game.KingdomStats.Wealth}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? kingdomStatsChanges.Wealth : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? kingdomStatsChanges.Wealth : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.KingdomStats.Wealth)));
             #endregion
 
@@ -462,7 +462,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"😄 Happiness: {game.PersonalStats.Happiness}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? personalStatsChanges.Happiness : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? personalStatsChanges.Happiness : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Happiness)));
             #endregion
 
@@ -470,7 +470,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             embed.AddField(new EmbedFieldBuilder()
                 .WithIsInline(true)
                 .WithName($"🤵‍♂️ Charisma: {game.PersonalStats.Charisma}" +
-                $"{GetChangeEmoji(isFirstMonth, !isFirstMonth ? personalStatsChanges.Charisma : (short)0)}")
+                $"{GetChangeEmoji(isFirstMonthOrLoaded, !isFirstMonthOrLoaded ? personalStatsChanges.Charisma : (short)0)}")
                 .WithValue(PrepareStatFieldValue(game.PersonalStats.Charisma)));
             #endregion
 
@@ -574,6 +574,12 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static void Advance(Game game, bool accepted)
         {
+            // Birthday Event
+            if (game.Date.Month == game.BirthDate.Month)
+            {
+                BirthdayEvent(game);
+            }
+
             if (game.IsCaptured)
             {
                 // Captured
@@ -638,7 +644,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             if (source != Request.Source.Default && HasCustomRequests)
             {       
-                if (source == Request.Source.Custom || CommonScript.Rng.Next(0, 100) < 50)
+                if (source == Request.Source.Custom || CommonScript.GetRandomPercentage() < 50)
                 {
                     // Custom (the rng is the chances of custom when in mixed)
                     return CustomRequests[CommonScript.Rng.Next(0, CustomRequests.Count - 1)];
@@ -711,18 +717,9 @@ namespace VoiceOfAKingdomDiscord.Modules
         {
             bool died = false;
 
-            if (game.Age >= AGE_THRESHOLD)
+            if (game.Age >= AGE_THRESHOLD && CommonScript.GetRandomPercentage() < CommonScript.RoundToX(game.Age) / 8)
             {
-                if (CommonScript.Rng.Next(0, 100) < CommonScript.RoundToX(game.Age) / 8)
-                {
-                    return DiedOfAge(game);
-                }
-            }
-
-            // Birthday
-            if (game.Date.Month == game.BirthDate.Month)
-            {
-                BirthdayEvent(game);
+                return DiedOfAge(game);
             }
 
             // Depression
@@ -745,26 +742,17 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             // Coup
-            if (game.KingdomStats.Military < MILITARY_THRESHOLD)
+            if (game.KingdomStats.Military < MILITARY_THRESHOLD && CommonScript.GetRandomPercentage() < COUP_CHANCE)
             {
-                if (CommonScript.Rng.Next(0, 100) < COUP_CHANCE)
-                {
-                    return CoupStaged(game);
-                }
+                return CoupStaged(game);
             }
-            else if (game.KingdomStats.Folks < FOLKS_THRESHOLD)
+            else if (game.KingdomStats.Folks < FOLKS_THRESHOLD && CommonScript.GetRandomPercentage() < REVOLUTION_CHANCE)
             {
-                if (CommonScript.Rng.Next(0, 100) < REVOLUTION_CHANCE)
-                {
-                    return RevolutionStarted(game);
-                }
+                return RevolutionStarted(game);
             }
-            else if (game.KingdomStats.Nobles < NOBLES_THRESHOLD)
+            else if (game.KingdomStats.Nobles < NOBLES_THRESHOLD && CommonScript.GetRandomPercentage() < ASSASSINATION_CHANCE)
             {
-                if (CommonScript.Rng.Next(0, 100) < ASSASSINATION_CHANCE)
-                {
-                    return AssassinationAttempted(game);
-                }
+                return AssassinationAttempted(game);
             }
             else if (game.KingdomStats.Wealth == 0)
             {
@@ -791,7 +779,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             // SUICIDE_CHANCE == 10
             // Happines == 30, actual suicide chance is 0
             // Happiness == 0, actual suicide chance is 30
-            bool suicided = CommonScript.Rng.Next(0, 100) < SUICIDE_CHANCE * (3 - CommonScript.RoundToX(game.PersonalStats.Happiness) / 10);
+            bool suicided = CommonScript.GetRandomPercentage() < SUICIDE_CHANCE * (3 - CommonScript.RoundToX(game.PersonalStats.Happiness) / 10);
 
             if (!suicided)
             {
@@ -804,7 +792,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     .WithImageUrl(Image.WarriorSide)
                     .Build()).Wait();
             }
-            else if (CommonScript.Rng.Next(0, 100) < DEPRESSION_CHANCE)
+            else if (CommonScript.GetRandomPercentage() < DEPRESSION_CHANCE)
             {
                 // Dying
                 if (game.IsCaptured)
@@ -900,7 +888,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             const short JAIL_BREAK_CHANCE = 20;
             const short EXECUTION_CHANCE = 40;
 
-            if (CommonScript.Rng.Next(0, 100) < JAIL_BREAK_CHANCE)
+            if (CommonScript.GetRandomPercentage() < JAIL_BREAK_CHANCE)
             {
                 // Breaking free
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -920,7 +908,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
                 return false;
             }
-            else if (CommonScript.Rng.Next(0, 100) < Math.Abs(EXECUTION_CHANCE - 10 * game.MonthsCaptured))
+            else if (CommonScript.GetRandomPercentage() < Math.Abs(EXECUTION_CHANCE - 10 * game.MonthsCaptured))
             {
                 // Death
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -997,7 +985,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             const short MURDER_THRESHOLD = 20;
             const short CHARISMA_WAY_OUT_THRESHOLD = 50;
 
-            if (CommonScript.Rng.Next(0, 100) < MURDER_THRESHOLD)
+            if (CommonScript.GetRandomPercentage() < MURDER_THRESHOLD)
             {
                 // Murder (most likely)
                 bool murdered = true;
@@ -1007,7 +995,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     "you hear the crowds chanting \"Give us the King's head!\". The guards are forced to let some of them inside. Soon enough, " +
                     "your door opens and the leader of the revolution along with 2 other men enter the room carrying their swords... ");
 
-                if (game.PersonalStats.Charisma > 80 && CommonScript.Rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+                if (game.PersonalStats.Charisma > 80 && CommonScript.GetRandomPercentage() < CHARISMA_WAY_OUT_THRESHOLD)
                 {
                     // Charisma backdoor
                     murdered = false;
@@ -1053,7 +1041,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             const short CHARISMA_WAY_OUT_THRESHOLD = 20;
             const short FIGHT_IT_OUT_THRESHOLD = 40;
 
-            if (game.PersonalStats.Charisma > 80 && CommonScript.Rng.Next(0, 100) < CHARISMA_WAY_OUT_THRESHOLD)
+            if (game.PersonalStats.Charisma > 80 && CommonScript.GetRandomPercentage() < CHARISMA_WAY_OUT_THRESHOLD)
             {
                 // Charisma backdoor
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -1074,7 +1062,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     Inc(happiness: SMALL_CHANGE);
                 return false;
             }
-            else if (CommonScript.Rng.Next(0, 100) < FIGHT_IT_OUT_THRESHOLD)
+            else if (CommonScript.GetRandomPercentage() < FIGHT_IT_OUT_THRESHOLD)
             {
                 // Fought it out
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
@@ -1115,7 +1103,7 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static bool ReachedBankruptcy(Game game)
         {
-            if (game.KingdomStats.Military > 70 && CommonScript.Rng.Next(0, 100) < 50)
+            if (game.KingdomStats.Military > 70 && CommonScript.GetRandomPercentage() < 50)
             {
                 // Got ally
                 GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
