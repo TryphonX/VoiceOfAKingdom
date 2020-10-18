@@ -700,8 +700,6 @@ namespace VoiceOfAKingdomDiscord.Modules
             game.Age = game.Date.DayOfYear >= game.BirthDate.DayOfYear
                 ? (short)(game.Date.Year - game.BirthDate.Year)
                 : (short)(game.Date.Year - game.BirthDate.Year - 1);
-
-            game.Age += 70;
         }
 
         /// <summary>
