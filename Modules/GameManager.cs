@@ -14,6 +14,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         // PATHS
         private const string DEFAULT_REQUESTS_PATH = "./DefaultRequests.xml";
         private const string CUSTOM_REQUESTS_PATH = "./CustomRequests.xml";
+        private const string SAVES_DIR = "./saves/";
 
         // GAMEPLAY
         private const int MAX_MONTHS_TO_PASS = 5;
@@ -258,7 +259,7 @@ namespace VoiceOfAKingdomDiscord.Modules
                     Directory.CreateDirectory("./saves");
                 }
 
-                doc.Save($"./saves/{game.PlayerID}.xml");
+                doc.Save($"{SAVES_DIR}{game.PlayerID}.xml");
 
                 return true;
             }
@@ -271,11 +272,11 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         public static async void Load(CommandHandler cmdHandler)
         {
-            if (File.Exists($"./saves/{cmdHandler.Msg.Author.Id}.xml"))
+            if (File.Exists($"{SAVES_DIR}{cmdHandler.Msg.Author.Id}.xml"))
             {
                 // load
                 XmlDocument doc = new XmlDocument();
-                doc.Load($"./saves/{cmdHandler.Msg.Author.Id}.xml");
+                doc.Load($"{SAVES_DIR}{cmdHandler.Msg.Author.Id}.xml");
 
                 Games.Add(Game.Parse(doc.DocumentElement, cmdHandler));
             }
@@ -324,10 +325,14 @@ namespace VoiceOfAKingdomDiscord.Modules
         /// <returns></returns>
         public static bool EndGame(Game game)
         {
-            bool success;
+            bool success = true;
             try
             {
-                success = true;
+                if (File.Exists($"{SAVES_DIR}{game.PlayerID}.xml"))
+                {
+                    File.Delete($"{SAVES_DIR}{game.PlayerID}.xml");
+                }
+
                 GetGameGuildChannel(game).DeleteAsync();
                 Games.Remove(game);
             }
