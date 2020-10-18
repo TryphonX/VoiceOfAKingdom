@@ -48,7 +48,7 @@ namespace VoiceOfAKingdomDiscord
 
             CommonScript.Log("Exiting");
 
-            // Thanks you, Visual Studio,
+            // Thank you, Visual Studio,
             // Really cool.
             // (Had to add this due to a VS Debugger bug)
             if (Debugger.IsAttached)
