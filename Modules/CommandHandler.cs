@@ -21,7 +21,8 @@ namespace VoiceOfAKingdomDiscord.Modules
                 new EndCommand(),
                 new ReloadCommand(),
                 new SaveCommand(),
-                new LoadCommand()
+                new LoadCommand(),
+                new DiscardCommand()
             };
 
         public void Run(SocketMessage msg)

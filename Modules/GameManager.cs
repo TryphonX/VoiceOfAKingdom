@@ -328,10 +328,7 @@ namespace VoiceOfAKingdomDiscord.Modules
             bool success = true;
             try
             {
-                if (File.Exists($"{SAVES_DIR}{game.PlayerID}.xml"))
-                {
-                    File.Delete($"{SAVES_DIR}{game.PlayerID}.xml");
-                }
+                DiscardSave(game.PlayerID);
 
                 GetGameGuildChannel(game).DeleteAsync();
                 Games.Remove(game);
@@ -343,6 +340,22 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             return success;
+        }
+
+        /// <summary>
+        /// Returns if it was successful or not.
+        /// </summary>
+        /// <param name="userID"></param>
+        /// <returns></returns>
+        public static bool DiscardSave(ulong userID)
+        {
+            if (File.Exists($"{SAVES_DIR}{userID}.xml"))
+            {
+                File.Delete($"{SAVES_DIR}{userID}.xml");
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
