@@ -574,12 +574,6 @@ namespace VoiceOfAKingdomDiscord.Modules
 
         private static void Advance(Game game, bool accepted)
         {
-            // Birthday Event
-            if (game.Date.Month == game.BirthDate.Month)
-            {
-                BirthdayEvent(game);
-            }
-
             if (game.IsCaptured)
             {
                 // Captured
@@ -706,6 +700,8 @@ namespace VoiceOfAKingdomDiscord.Modules
             game.Age = game.Date.DayOfYear >= game.BirthDate.DayOfYear
                 ? (short)(game.Date.Year - game.BirthDate.Year)
                 : (short)(game.Date.Year - game.BirthDate.Year - 1);
+
+            game.Age += 70;
         }
 
         /// <summary>
@@ -720,6 +716,12 @@ namespace VoiceOfAKingdomDiscord.Modules
             if (game.Age >= AGE_THRESHOLD && CommonScript.GetRandomPercentage() < CommonScript.RoundToX(game.Age) / 8)
             {
                 return DiedOfAge(game);
+            }
+
+            // Birthday Event
+            if (game.Date.Month == game.BirthDate.Month)
+            {
+                BirthdayEvent(game);
             }
 
             // Depression
