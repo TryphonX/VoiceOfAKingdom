@@ -33,6 +33,7 @@ namespace VoiceOfAKingdomDiscord.Modules
         private const short MILITARY_THRESHOLD = 20;
         private const short FOLKS_THRESHOLD = 20;
         private const short NOBLES_THRESHOLD = 20;
+        private const short AGE_THRESHOLD = 50;
 
         private const short HAPPINESS_THRESHOLD = 30;
 
@@ -709,7 +710,15 @@ namespace VoiceOfAKingdomDiscord.Modules
         private static bool CheckForEvents(Game game)
         {
             bool died = false;
-            
+
+            if (game.Age >= AGE_THRESHOLD)
+            {
+                if (CommonScript.Rng.Next(0, 100) < CommonScript.RoundToX(game.Age) / 8)
+                {
+                    return DiedOfAge(game);
+                }
+            }
+
             // Birthday
             if (game.Date.Month == game.BirthDate.Month)
             {
@@ -756,7 +765,6 @@ namespace VoiceOfAKingdomDiscord.Modules
                 {
                     return AssassinationAttempted(game);
                 }
-
             }
             else if (game.KingdomStats.Wealth == 0)
             {
@@ -764,6 +772,17 @@ namespace VoiceOfAKingdomDiscord.Modules
             }
 
             return false;
+        }
+
+        private static bool DiedOfAge(Game game)
+        {
+            GetGameMessageChannel(game).SendMessageAsync(embed: new CustomEmbed()
+                   .WithColor(Color.DarkBlue)
+                   .WithTitle("Died of age.")
+                   .WithImageUrl(Image.DroppedSword)
+                   .Build()).Wait();
+            SendEndGameMsg(game);
+            return true;
         }
 
         private static bool DepressionEvent(Game game)
